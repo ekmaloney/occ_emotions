@@ -1,0 +1,211 @@
+---
+title: "Identity to GSS Crosswalk"
+author: "Emily Maloney"
+date: "3/26/2020"
+output:
+  word_document: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Appendix A: Crosswalk
+
+To increase the sample size of individuals used in this analysis, the identity-to-GSS crosswalk was revised to encompass more identities. After using the crosswalk from Freeland and Hoey's (2018) analysis, 136 occupational codes did not have identity match. For the 1996 subsection of the analysis, this resulted in 912 missing cases. 
+
+To match occupational codes with identities from the most recent ACT dictionary, 3 general rules were followed: 
+
+1. Assign the missing occupational identity to a general identity under which the specific falls. For example, the occupational codes including specific instances of managers (e.g. 1221 - 1229) were all assigned the identity of manager. Another example is assigning the occupational code 2213, indicating "Agronomists and related professionals" the identity of scientist.
+
+2. Assign the missing occupational identity to an analagous identity. For example, occupational code 4122, indicating Statistical and finance clerks was given the identity of accountant. 
+
+3. If neither 1 or 2 was possible for an occupational code, no identity was assigned. The occupations that this applied to were typically very specific and had no reasonable analogy within the 303 occupational identities available. 
+
+The newly assigned identities are displayed in table 1, which shows the ISCO-88 code, the identity assigned to it, the number of individuals falling into this category, and the description for the ISCO-88 code used to help assign the identity. 
+
+Lastly, the occupations without any identity are listed in table 2. In total, the number of excluded cases based on no identity are now reduced to 53. 
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+#libraries
+library(dplyr)
+library(gssr)
+library(knitr)
+library(kableExtra)
+library(readr)
+library(tidyverse)
+
+#load in all of the gss data
+data(gss_all)
+
+#load in the crosswalk and the block_info
+cross_walk <- read_csv("/Users/emilymaloney/2yp/data/Identity to GSS Crosswalk.csv")
+block_info <- read_csv("/Users/emilymaloney/2yp/data/block_info_bayesact.csv")
+
+#fix the string formatting to match 
+cross_walk <- cross_walk %>% 
+              mutate(term = tolower(Identity),
+                     term = str_replace_all(term, " ", "_"),
+                     term = str_replace(term, "-", "_"))
+
+#join the cross walk and the block info
+cross_block <- left_join(cross_walk, block_info, by = "term")
+
+#select variables I care about 
+cross_block <- cross_block %>% 
+               mutate(isco88 = `ISCO-88`) %>% 
+               select(term, isco88, blocks_4)
+
+#make sure the two variables to be joined on are the same type
+gss_all <- gss_all %>% mutate(isco88 = as.integer(isco88))
+
+#join gss with the block_info
+gss_block <- left_join(gss_all, cross_block, by = "isco88")
+
+#get list of all occupational codes without an identity crosswalk
+occs <- gss_block %>% filter(is.na(blocks_4) & !is.na(isco88) & year == 1996) %>% 
+        group_by(isco88) %>% 
+        summarise(num = n())
+
+#mutate so the variables that I want to join on have the same name
+cross_walk <- cross_walk %>% mutate(isco88 = `ISCO-88`)
+
+#join the missing occupations with the cross walk
+occs_cw <- full_join(occs, cross_walk) %>% 
+           select(isco88, num, term) %>% 
+           arrange(isco88)
+
+#read in the isco88 code
+library(readxl)
+isco <- read_excel("/Users/emilymaloney/2yp/data/ISCO88.xls")
+
+#mutate so the variables that I want to join on have the same name
+isco <- isco %>% mutate(isco88 = `ISCO88(COM) code`)
+
+isco <- isco %>% 
+        mutate(isco88 = case_when(isco88 == 11 ~ 110,
+                                  isco88 == 122 ~ 1220,
+                                  isco88 == 211 ~ 2110,
+                                  isco88 == 244 ~2440,
+                                  isco88 == 311 ~ 3110,
+                                  isco88 == 33 ~ 3300,
+                                  isco88 == 411 ~ 4110,
+                                  isco88 == 52 ~ 5200,
+                                  isco88 == 72 ~ 7200,
+                                  isco88 == 81 ~ 8100,
+                                  isco88 == 82 ~ 8200,
+                                  isco88 == 823 ~ 8230,
+                                  isco88 == 827 ~ 8270,
+                                  isco88 == 831 ~ 8310,
+                                  isco88 == 911 ~ 9110,
+                                  isco88 == 916 ~ 9160,
+                                  TRUE ~ isco88))
+occs_cw <- left_join(occs, isco)
+
+```
+
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+new_cw <- occs_cw %>% 
+          mutate(term = case_when(isco88 < 1000 ~ "legislator",
+                                  isco88 == 1210 ~ "executive",
+                                  isco88 >= 1220 & isco88 <= 1230 ~ "manager",
+                                  isco88 >= 1234 & isco88 <= 1239 ~ "manager",
+                                  isco88 >= 1313 & isco88 <= 1319 ~ "manager_of_branch_store",
+                                  isco88 == 2110 ~ "physicist",
+                                  isco88 == 2112 ~ "scientist",
+                                  isco88 == 2121 ~ "statistician",
+                                  isco88 == 2144 ~ "engineer",
+                                  isco88 == 2147 ~ "engineer",
+                                  isco88 == 2148 ~ "architect",
+                                  isco88 == 2212 ~ "scientist",
+                                  isco88 == 2213 ~ "scientist",
+                                  isco88 == 2229 ~ "doctor",
+                                  isco88 == 2310 ~ "professor",
+                                  isco88 == 2320 ~ "teacher",
+                                  isco88 == 2332 ~ "elementary_school_teacher",
+                                  isco88 == 2340 ~ "teacher",
+                                  isco88 >= 2412 & isco88 <= 2419 ~ "professional",
+                                  isco88 == 2440 ~ "scientist",
+                                  isco88 == 2442 ~ "researcher",
+                                  isco88 == 2444 ~ "interpreter",
+                                  isco88 == 2453 ~ "musician",
+                                  isco88 == 2454 ~ "artist",
+                                  isco88 >= 3110 & isco88 <= 3119 ~ "technician",
+                                  isco88 == 3121 ~ "computer_support_specialist",
+                                  isco88 == 3131 ~ "photographer",
+                                  isco88 == 3141 ~ "ship_engineer",
+                                  isco88 == 3142 ~ "ship_captain",
+                                  isco88 == 3152 ~ "inspector",
+                                  isco88 == 3212 ~ "technician",
+                                  isco88 == 3224 ~ "doctor",
+                                  isco88 == 3226 ~ "physician",
+                                  isco88 == 3227 ~ "veterinarian",
+                                  isco88 == 3229 ~ "physician",
+                                  isco88 == 3300 | isco88 == 3340 ~ "teacher",
+                                  isco88 == 3432 ~ "professional",
+                                  isco88 == 3442 | isco88 == 3443 ~ "civil_servant",
+                                  isco88 == 3450 ~ "detective",
+                                  isco88 == 4110 ~ "clerk",
+                                  isco88 == 4144 | isco88 == 4121 | isco88 == 4122 ~ "accountant",
+                                  isco88 == 4221 ~ "travel_agent",
+                                  isco88 == 5111 ~ "flight_attendant",
+                                  isco88 == 5133 ~ "nursing_assistant",
+                                  isco88 == 5143 ~ "funeral_director",
+                                  isco88 == 5163 ~ "police_officer",
+                                  isco88 == 5200 ~ "salesperson",
+                                  isco88 == 6129 ~ "farmer",
+                                  isco88 == 7134 | isco88 == 7135  | isco88 == 7141 ~
+                                    "construction_laborer",
+                                  isco88 == 7200 | isco88 == 7223 ~
+                                    "machine_operator_in_a_factory",
+                                  isco88 == 7213 ~ "sheet_metal_worker",
+                                  isco88 == 7215 ~ "construction_laborer",
+                                  isco88 == 7224 ~ "machine_repairer",
+                                  isco88 == 7232 ~ "auto_mechanic",
+                                  isco88 == 7240 ~ "electrician",
+                                  isco88 == 7300  | isco88 == 7324 ~ "craftsman",
+                                  isco88 == 7234 | isco88 == 7341 | isco88 == 7343 ~ "craftsman",
+                                  isco88 == 7435 | isco88 == 7437~ "textile_worker",
+                                  isco88 >= 8100 & isco88 <= 8113 ~ "machine_operator",
+                                  isco88 >= 8123 & isco88 <= 8261 ~ "machine_operator",
+                                  isco88 == 8270 | isco88 == 8290 ~ "machine_operator",
+                                  isco88 == 8282 ~ "assembly_line_worker",
+                                  isco88 == 8310 ~ "railroad_engineer",
+                                  isco88 == 8332 | isco88 == 8334 ~ "bulldozer_operator",
+                                  isco88 == 8333 ~ "crane_operator",
+                                  isco88 == 9110 | isco88 == 9113 ~ "salesperson",
+                                  isco88 == 9152 ~ "security_guard",
+                                  isco88 == 9160 ~ "garbage_collector",
+                                  isco88 == 9212 | isco88 == 9213 ~ "laborer",
+                                  isco88 == 9312 ~ "construction_laborer")) %>% 
+      select(isco88, term, num, `MAJOR, SUB-MAJOR, MINOR AND UNIT GROUPS`)
+
+tabl1 <- new_cw %>% filter(!is.na(term))
+tabl2 <- new_cw %>% filter(is.na(term))
+
+kable(tabl1, format = "pandoc", caption = "New Crosswalk Relationships") %>% 
+  kable_styling(full_width = TRUE)
+kable(tabl2, format = "pandoc", caption = "OCC codes without identity matches")
+```
+
+
+## Appendix B: Indicator Normality
+
+```{r}
+skew_scores <- readRDS("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/output/skew_scores.RDS")
+
+kable(skew_scores, format = "pandoc", caption = "Skewness Scores for CFA Indicator Variables",
+      col.names = c("Income (Log)", "Father SEI", "Education", "Prestige"))
+```
+
+![Income Histogram](/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/output/income_hist.png)
+
+![Father SEI Histogram](/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/output/sei_hist.png)
+
+![Education Histogram](/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/output/educ_hist.png)
+
+![Occupational Prestige Histogram](/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/output/prest_hist.png)
