@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 How does occupying an occupational identity determine which sorts of emotions an individual experiences in everyday life? Prior work has framed this question largely in terms of the relationships between the power and prestige structure and enforcement of emotion norms (Collett and Lizardo 2010; Hochschild 2012a; Kemper 1978; Lively and Powell 2016). In general, this work has focused on explaining who is more likely to experience and suppress expression of negative emotions as a consequence of the lower status of an occupation and who has to produce and manage others' emotions as part of their work (Hochschild 2012a). This study, however, takes a more explicitly identity-centered approach to argue that one’s occupational identity shapes emotional experience by influencing the social interactions within the work environment and the emotional consequences that result from them. I hypothesize that individuals report experiencing emotions that are closer in meaning to their occupational identity more frequently than those that are less similar in cultural meaning.\ 
 
-Working adults spend the majority of their waking hours enmeshed in the identity associated with their job – their occupational identity (Fine 1996; Phelan and Kinsella 2009). Occupations clearly have differing levels of material rewards and requirements attached to them – the income earned, the hours worked, and the education and network ties required to attain them. But these role-identities also have different cultural meanings, namely how good the occupation is, how powerful it is, and how active they are (Freeland and Hoey 2018; Heise 2007). These meanings shape the types of interactions one has with other individuals in daily life. For example, a lawyer’s day is more likely to involve interactions with clients, other lawyers, or judges in which they are treated as an expert guiding others through a complicated legal process. These interactions, when they go well, may engender feelings of contentment or self-respect; if they go poorly, they may evoke frustration or resentment. Identity theorists have long suggested that individuals largely strive to maintain their identities through interactions (Burke and Stets 2009; Heise 2007). Doing so with regard to occupational identity means meeting the societal expectations associated with one’s job’s meaning.\ 
+Working adults spend the majority of their waking hours enmeshed in the identity associated with their job – their occupational identity (Fine 1996; Phelan and Kinsella 2009). Occupations clearly have differing levels of material rewards and requirements attached to them – the income earned, the hours worked, and the education and network ties required to attain them. But these role-identities also have different cultural meanings, namely how good the occupation is, how powerful it is, and how active they are (Freeland and Hoey 2018; Heise 2007). These meanings shape the types of interactions one has with other individuals in daily life. For example, a lawyer’s day is more likely to involve interactions with clients, other lawyers, or judges in which he or she is treated as an expert guiding others through a complicated legal process. These interactions, when they go well, may engender feelings of contentment or self-respect; if they go poorly, they may evoke frustration or resentment. Identity theorists have long suggested that individuals largely strive to maintain their identities through interactions (Burke and Stets 2009; Heise 2007). Doing so with regard to occupational identity means meeting the societal expectations associated with one’s job’s meaning.\ 
 
 Using this logic and taking a specifically Affect Control Theory approach, this paper tests the hypothesis that working adults are more likely to report feeling emotions that are close in meaning to the sentiment of their occupational identity. Further, the more material power and resources you have to help you define and control the situation, the stronger this relationship will be because you are more effective at maintaining the identity.\ 
 
@@ -62,7 +62,7 @@ This means that identities which are higher in evaluation have characteristic em
 
 ### Occupational Identity and Emotion \
 
-Adults who work full-time spend the majority of their day-time hours within their occupational identity. Through embodying this identity, individuals will strive to enact behaviors within interactions that will maintain the fundamental sentiment of their occupational identity. Further, because Affect Control Theory predicts that individuals feel emotions that are close in meaning to an identity when an identity is confirmed through an interaction, we should expect that individuals in occupational identities report feeling emotions that are similar to the characteristic emotion of their identity. Moreover, the institutional frameworks that structure the types of interactions an individual will have while occupying their occupational identity provide them with interaction sets that, in general, should work to maintain that identity (Ridgeway 2000). For example, pediatricians spend the majority of their occupational hours interacting with children and their parents in a doctor-patient relationship. Most of the interactions will fundamentally be of the type Doctor Helps Patient which maintains the identity of the doctor in that situation. If institutional frameworks did not sustain identity maintaining interactions in this way, we would expect more volatility in the EPA ratings of identities and behaviors. Alternatively, we would expect evidence of cultural change in the fundamental EPA of those identities and behaviors. Given this, the first hypothesis argues that individuals should be likely to report experiencing emotions that are close in meaning to their occupational identity’s characteristic emotion. \
+Adults who work full-time spend the majority of their day-time hours within their occupational identity. Through embodying this identity, individuals will strive to enact behaviors within interactions that will maintain the fundamental sentiment of their occupational identity. Further, because Affect Control Theory predicts that individuals feel emotions that are close in meaning to an identity when an identity is confirmed through an interaction, we should expect that individuals in occupational identities report feeling emotions that are similar to the characteristic emotion of their identity. Moreover, the institutional frameworks that structure the types of interactions an individual will have while occupying their occupational identity provide them with interaction sets that, in general, should work to maintain that identity (Ridgeway 2000). For example, pediatricians spend the majority of their occupational hours interacting with children and their parents in a doctor-patient relationship. Most of the interactions will fundamentally be of the type Doctor Helps Patient which maintains the identity of the Doctor in that situation. If institutional frameworks did not sustain identity maintaining interactions in this way, we would expect more volatility in the EPA ratings of identities and behaviors. Alternatively, we would expect evidence of cultural change in the fundamental EPA of those identities and behaviors. Given this, the first hypothesis argues that individuals should be likely to report experiencing emotions that are close in meaning to their occupational identity’s characteristic emotion. \
 
 **H1**: The greater the distance between an individual’s occupational identity’s characteristic emotion and an emotion word in EPA space, the less likely that individual is to report frequently feeling that emotion. \
 
@@ -99,7 +99,7 @@ data(gss_all)
 
 #load in the crosswalk and the block_info
 cross_walk <- readr::read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/new_crosswalk.csv")
-block_info <- readr::read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/block_info_bayesact.csv")
+block_info <- read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/block_info_bayesact.csv")
 
 #join the cross walk and the block info
 cross_block <- left_join(cross_walk, block_info, by = "term")
@@ -207,13 +207,13 @@ gss_block_emotions <- gss_block_emotions %>%
 
 The data used in this analysis come from the 1996 wave of the General Social Survey (GSS). The GSS is a nationally representative survey that includes a core set of survey items collecting demographic and socioeconomic information, and additional modules on specific topics. In 1996, the GSS fielded a module focusing on emotional experience. This analysis is limited to only individuals who reported working full-time in the prior year to ensure that only respondents for whom a large portion of daily interactions occurred in the occupational identity were included. Additionally, those with missing values on the dependent and control variables were removed from the sample. This resulted in a total of 811 respondents for the primary analyses.\ 
 
-The Affect Control Dictionary used for measurements of the cultural meaning of the occupational identities and emotion words in this analysis was the most recent U.S. dictionary, measured in 2015 with a sample of respondents from the University of Georgia, Duke University, and the Durham, North Carolina community (Robinson et al 2016). These identities and modifiers were measured by asking respondents to rate a single Identity or Emotion word at a time on how good/bad, powerful/weak, and active/inactive they were, on a scale from -4.3 (extremely bad, weak, inactive) to +4.3 (extremely good, powerful, active). The mean rating across respondents on each axis is used as the point estimate for the identity or behavior. 
+The Affect Control Dictionary used for measurements of the cultural meaning of the occupational identities and emotion words in this analysis was the most recent U.S. dictionary, measured in 2015 with a sample of respondents from the University of Georgia, Duke University, and the Durham, North Carolina community (Robinson et al 2016). These identities and modifiers were measured by asking respondents to rate a single identity or Eeotion word at a time on how good/bad, powerful/weak, and active/inactive they were, on a scale from -4.3 (extremely bad, weak, inactive) to +4.3 (extremely good, powerful, active). The mean rating across respondents on each axis is used as the point estimate for the identity or behavior. 
 	
 #### Variables
 
 ##### Dependent Variables \
 
-The 1996 emotions module asked questions about how many days of the past seven days the respondent experienced certain emotions. Of the emotion questions available, 15 are used in this analysis (because EPA ratings were available for them in the ACT sentiment dictionary): angry, anxious, ashamed, calm, contented, excited, fearful, happy, lonely, mad, outraged, overjoyed, proud, restless, sad, and worried. The dependent variable is operationalized as the count, ranging from 0 to 7, which the respondent reported feeling that emotion in the past week. Two questions were double barreled, one asking both about being excited or interested and another feeling anxious and tense. Only the first emotion word in each case (excited, anxious) was used for generating distances in this analysis. Figure one displays the distribution of responses across the sample.\ 
+The 1996 emotions module asked questions about how many days of the past seven days the respondent experienced certain emotions. Of the emotion questions available, 16 are used in this analysis (because EPA ratings were available for them in the ACT sentiment dictionary): Angry, Anxious, Ashamed, Calm, Contented, Excited, Fearful, Happy, Lonely, Mad, Outraged, Overjoyed, Proud, Restless, Sad, and Worried. The dependent variable is operationalized as the count, ranging from 0 to 7, which the respondent reported feeling that emotion in the past week. Two questions were double barreled, one asking both about being excited or interested and another feeling anxious and tense. Only the first emotion word in each case (excited, anxious) was used for generating distances in this analysis. Figure one displays the distribution of responses across the sample.\ 
 
 Clearly, some emotions are less likely to be experienced than others. For example, the highly negative emotions such as ashamed, fearful, and lonely are left skewed, with high numbers of respondents who reported feeling them on zero of the last seven days. On the other hand, some of the more positive but less active emotions, such as calm, happy, and contented, are right skewed, with more individuals reporting feeling these emotions daily in comparison to other emotions included in this survey. These distributions were taken into account when specifying the model (see below).\ 
 
@@ -395,7 +395,12 @@ gss_words_in_dictionary <- modifiers %>%
                                           fdist = ((E - fe_e)^2 + (P - fe_p)^2 + (A - fe_a)^2)) %>% 
                    filter(!is.na(fe_e)) %>% 
                    filter(term != "interested") %>% 
-                   filter(term != "tense")
+                   filter(term != "tense") %>% 
+                   mutate(emotion = term,
+                                emotion = str_replace(emotion, "happy", "hapfeel"),
+                                emotion = str_replace(emotion, "overjoyed", "ovrjoyed"),
+                                emotion = str_replace(emotion, "contented", "contentd"),
+                                emotion = str_replace(emotion, "mad", "madat"))
 
   #make histogram with the distances from each occupation's characteristic emotion
  dist_hist <-  ggplot(occs_emotions, mapping = aes(x = mdist)) + 
@@ -499,7 +504,7 @@ res %>% kable(digits = 3, format="pandoc", caption="CFA Factor Loadings")
 
 ##### Control Variables \ 
 
-Across the models, three various demographic and corresponding variables were included as controls: race, sex, and age. These variables are included as controls in the following models because there is reason to believe that they could affect both selection into occupational category as well as the probability of the respondent reporting certain emotions. Race was operationalized as a factor variable with three levels: white, black, and other. Male is a binary variable with a level of one indicating the respondent identified themselves as male and 0 as female, and age is a numeric variable indicating the number of years old the respondent is at the time of the survey.\ 
+Across the models, three various demographic variables were included as controls: race, sex, and age. These variables are included as controls in the following models because there is reason to believe that they could affect both selection into occupational category as well as the probability of the respondent reporting certain emotions. Race was operationalized as a factor variable with three levels: white, black, and other. Male is a binary variable with a level of one indicating the respondent identified themselves as male and 0 as female, and age is a numeric variable indicating the number of years old the respondent is at the time of the survey.\ 
 
 Descriptive statistics for the independent and control variables are shown in Table 5. The sample is slightly more male than female, and overwhelmingly white – only 20% of respondents are not white. Age ranges from 19 to 78, with respondents averaging around 40 years old.\ 
 
@@ -538,9 +543,9 @@ tbl_summary(descriptives,
 
 #### Analysis \ 
 
-For analysis, the data was re-structured into long format such that there were 15 observations per individual, one for each emotion count included in the GSS. This resulted in a total of 12,776 observations per model. The models were estimated by a multilevel Poisson regression with random intercepts for each individual and emotion. Structuring the data in this way creates dependencies between observation but allows for the pooling across all of the emotional response variables into a single analysis, to test the main hypotheses regardless of the specific emotion in question. Including the random intercepts for the individual and the emotion then accounts for the grouped nature of the data and interdependent observations.\ 
+For analysis, the data was re-structured into long format such that there were 16 observations per individual, one for each emotion count included in the GSS. This resulted in a total of 12,696 observations per model. The models were estimated by a multilevel Poisson regression with random intercepts for each individual and emotion. Structuring the data in this way creates dependencies between observation but allows for the pooling across all of the emotional response variables into a single analysis, to test the main hypotheses regardless of the specific emotion in question. Including the random intercepts for the individual and the emotion then accounts for the grouped nature of the data and interdependent observations.\ 
 
-Seven total models were estimated to test the hypotheses. First, the reported count of emotions was regressed on the standardized measure of distance in EPA space from the characteristic emotion, to test H1 without controls. Next, model two includes material power as an additional explanatory variable. Model three includes sex, race, and age as additional covariates, to test whether H1 holds when controlling for these possible confounders. To test H2, the correlation between the random intercepts for the 15 emotions of model 1 and the average distance between occupational identity’s characteristic emotion and the emotion is computed.\ 
+Seven total models were estimated to test the hypotheses.[^3] First, the reported count of emotions was regressed on the standardized measure of distance in EPA space from the characteristic emotion, to test H1 without controls. Next, model two includes material power as an additional explanatory variable. Model three includes sex, race, and age as additional covariates, to test whether H1 holds when controlling for these possible confounders. To test H2, the correlation between the random intercepts for the 16 emotions of model 1 and the average distance between occupational identity’s characteristic emotion and the emotion is computed.\ 
 
 Model four tests H3 by including an interaction between the measure of material power and the distance from emotion. Model five tests H4 by including an interaction between sex and the distance from emotion. Model six tests H5 by including an interaction between race and the distance from emotion. Lastly, model seven tests H6 by including an interaction between age and the distance from emotion.\ 
 
@@ -577,7 +582,8 @@ stargazer(m1, m2, m3, m4,
                                "Age (standardized)",
                                "Distance*Material Power",
                                "Constant"),
-          header=FALSE)
+          header=FALSE,
+          column.labels=c("M1", "M2", "M3", "M4"), model.numbers=FALSE)
 
 m1_res <- tidy(m1)
 
@@ -585,12 +591,12 @@ dist_beta <- m1_res$estimate[2]
 
 m3_res <- tidy(m3)
 
-pred_data <- tibble(dist_emotion = rep(c(rep(0, 811), rep(1, 811)), 16),
+pred_data <- tibble(dist_emotion = c(rep(0, 12976), rep(1, 12976)),
                     mat_power = mean(gss_long_nomiss$mat_power),
                     sex = "Male",
                     race = "White",
                     age_std = 0,
-                    id = rep(rep(unique(gss_long_nomiss$id), 2), 16),
+                    id = rep(rep(unique(gss_long_nomiss$id),each = 16), 2),
                     emotion = rep(emotion_vars, 1622)) %>% 
               mutate(predicted_counts = predict(m3, newdata = ., allow.new.levels=T),
                      predicted_counts = exp(predicted_counts)) %>%
@@ -603,13 +609,16 @@ pred_data <- tibble(dist_emotion = rep(c(rep(0, 811), rep(1, 811)), 16),
               summarise(mdiff = mean(diff)) %>% 
               mutate(m_emo = mean(mdiff))
 
+ints <- ranef(m1)$emotion
 
+ints <- cbind(emo_desc, ints)
 
+int_cor <- cor(ints$mean_dist, ints$`(Intercept)`)
 ```
 
 Table 6 displays the results from the first four models. Model one shows a statistically significant effect of the distance from characteristic emotion on the expected count of a participant experiencing the GSS emotion. Specifically, with each one standard deviation increase in the distance between an individual’s occupational identity’s characteristic emotion from a GSS emotion word in EPA space, the expected count is `r exp(dist_beta) %>% round(digits = 2)` times as great.\ 
 
-The results from model two indicate that this effect remains negative and significant even after material power is added to the model, suggesting that regardless of one’s resources,  EPA distance from an occupation’s characteristic emotion remains an important deterrent from experiencing that emotion. Interestingly, material power on its own has no direct effect on the emotion counts.  Further, when all other controls are added in model three, distance from emotion remains both negative and significant, only slightly lower in magnitude than in model one. To provide an illustrative example: when everything else is held constant at its mean, we would expect that an individual whose occupational identity’s characteristic emotion is located at the mean distance from the emotion in EPA space (zero on the standardized scale) to report experiencing an emotion `r pred_data %>% filter(emotion == "hapfeel") %>% select(m_emo) %>% round(digits = 3)` fewer days of the week, on average across individuals and emotions. Looking at emotions separately, I predict that for an individual whose characteristic emotion is 1 standard deviation away from "happy" in EPA space, they will report feeling the emotion `r pred_data %>% filter(emotion == "hapfeel") %>% select(mdiff) %>% round(digits = 3)` fewer days than someone whose distance from happy in EPA space is at the mean. Although the magnitude of the effect is small, it is significant. In the following models I explore the hypotheses suggesting that the small size of the effect could be due to the variation in this effect across material resources and status characteristics.\ 
+The results from model two indicate that this effect remans negative and significant even after material power is added to the model, suggesting that regardless of one’s resources,  EPA distance from an occupation’s characteristic emotion remains an important deterrent from experiencing that emotion. Interestingly, material power on its own has no direct effect on the emotion counts.  Further, when all other controls are added in model three, distance from emotion remains both negative and significant, only slightly lower in magnitude than in model one. To provide an illustrative example: when everything else is held constant at its mean, we would expect that an individual whose occupational identity’s characteristic emotion is located at the mean distance from the emotion in EPA space (zero on the standardized scale) to report experiencing an emotion `r pred_data %>% filter(emotion == "hapfeel") %>% select(m_emo) %>% round(digits = 3)` fewer days of the week, on average across individuals and emotions. Looking at emotions separately, I predict that for an individual whose characteristic emotion is 1 standard deviation away from "happy" in EPA space, they will report feeling the emotion `r pred_data %>% filter(emotion == "hapfeel") %>% select(mdiff) %>% round(digits = 3)` fewer days than someone whose distance from happy in EPA space is at the mean. Although the magnitude of the effect is small, it is significant. In the following models I explore the hypotheses suggesting that the small size of the effect could be due to the variation in this effect across material resources and status characteristics.\ 
 
 Figure 3 displays a plot of the random intercepts for each emotion from model 1, to display how an emotion’s position in EPA space affects its general likelihood of being experienced by full-time employed respondents. Six emotions had positive random intercepts: happy, calm, contented, excited, worried, and anxious, while the other nine emotions: sad, mad, angry, overjoyed, outraged, lonely, restless, fearful, and ashamed have negative intercepts. The correlation between average distance and the intercept in model one is -0.585, supporting the overarching ACT hypothesis that in aggregate, as an emotion is in more extreme EPA space it is less likely to be experienced.\ 
 
@@ -669,7 +678,8 @@ stargazer(m5, m6, m7,
                                "Distance*Other Race",
                                "Distance*Age",
                                "Constant"),
-          header=FALSE)
+          header=FALSE,
+          column.labels=c("M5", "M6", "M7"), model.numbers=FALSE)
 ```
 
 
@@ -716,7 +726,7 @@ fpreds <- tibble(dist_emotion = rep(fire_distances$dist_emotion, 811),
                     sex = "Male",
                     race = "White",
                     age_std = 0,
-                    id = rep(unique(gss_long_nomiss$id), 16),
+                    id = rep(unique(gss_long_nomiss$id), each = 16),
                     emotion = rep(fire_distances$emotion, 811)) %>% 
               mutate(predicted_counts = predict(m7, newdata = ., allow.new.levels=T),
                      predicted_counts_exp = exp(predicted_counts)) %>% 
@@ -728,7 +738,7 @@ bpreds <- tibble(dist_emotion = rep(bill_dist$dist_emotion, 811),
                     sex = "Male",
                     race = "White",
                     age_std = 0,
-                    id = rep(unique(gss_long_nomiss$id), 16),
+                    id = rep(unique(gss_long_nomiss$id), each = 16),
                     emotion = rep(bill_dist$emotion, 811)) %>% 
               mutate(predicted_counts = predict(m7, newdata = ., allow.new.levels=T),
                      predicted_counts_exp = exp(predicted_counts)) %>% 
@@ -740,7 +750,7 @@ ppreds <- tibble(dist_emotion = rep(prof_dist$dist_emotion, 811),
                     sex = "Male",
                     race = "White",
                     age_std = 0,
-                    id = rep(unique(gss_long_nomiss$id), 16),
+                    id = rep(unique(gss_long_nomiss$id), each = 16),
                     emotion = rep(prof_dist$emotion, 811)) %>% 
               mutate(predicted_counts = predict(m7, newdata = ., allow.new.levels=T),
                      predicted_counts_exp = exp(predicted_counts)) %>% 
@@ -749,6 +759,11 @@ ppreds <- tibble(dist_emotion = rep(prof_dist$dist_emotion, 811),
 
 all_predictions <- left_join(fpreds, bpreds)
 all_predictions <- left_join(all_predictions, ppreds)
+all_predictions <- all_predictions %>% 
+                   mutate(emotion = str_replace(emotion, "happy", "hapfeel"),
+                          emotion = str_replace(emotion, "overjoyed", "ovrjoyed"),
+                          emotion = str_replace(emotion, "contented", "contentd"),
+                          emotion = str_replace(emotion, "mad", "madat"))
 
 kable(all_predictions, digits = 3, caption = "Predicted Emotions for 3 Occupations", format = "pandoc")
 ```
@@ -766,13 +781,13 @@ Theoretically, this paper supports Affect Control Theory’s emotion predictions
 
 In terms of prior work on the intersection of emotion and experience, this paper provides a different lens through which to view the link: identity, which has been shown to helpfully bridge structural and cultural explanations of emotional experience in the past (Collett and Lizardo 2010; Lively and Powell 2016). While the results found here cannot explain all of the questions left open in previous work on emotions on the job, it affords a general framework to use when thinking about how occupations shape one’s emotional experience. For instance, when thinking about emotional labor and emotion management, concepts such as feeling rules and emotion norms could be formalized by using Affect Control Theory’s measurement tools which can quantify cultural expectations (Freeland and Hoey 2018; Hunzaker 2016).\ 
 
-Additionally, the results indicating the influence of material and social interactional resources supports prior work on how resources aid in interaction management and defining the situation, and provide impetus for further work on how exactly these mechanisms work as situations unfold. In particular, this work suggests that fruitful avenues of research investigate whether definition of the situation is taken by the higher status person or given thorugh deference actions of the lower status individual. Additionally, future work could look at which resources are more or less effective at maintaining an interaction and how different resources work together to maintain a situation.\ 
+Additionally, the results indicating the influence of material and social interactional resources supports prior work on how resources aid in interaction management and defining the situation, and provide impetus for further work on how exactly these mechanisms work as situations unfold. In particular, this work suggests that fruitful avenues of research investigate whether definition of the situation is taken by the higher status person or given through deference actions of the lower status individual. Additionally, future work could look at which resources are more or less effective at maintaining an interaction and how different resources work together to maintain a situation.\ 
 
 #### Limitations 
 
-There are several limitations of the research design to make note of. First, the operationalization of the dependent variable as self-reports of how often the respondent felt an emotion in the past week means it is difficult to tease apart whether the dependent variable is accurately measuring an emotion experienced versus those that the respondent feels comfortable reporting having experienced.\ 
+There are several limitations of the research design. First, the operationalization of the dependent variable as self-reports of how often the respondent felt an emotion in the past week means it is difficult to tease apart whether the dependent variable is accurately measuring an emotion experienced versus those that the respondent feels comfortable reporting having experienced.\ 
 
-Additionally, the variables for race and gender are not exhaustive, as those who were not white or Black were lumped into a third “Other” category and there were no questions about gender identity. This weakened the ability to test the hypotheses about diffuse status characteristics and suggests follow up work with a more targeted sample that includes more options for gender and race would be especially useful to diving deeper into these patterns. On this note, there was not enough power to include tests of intersectional effects – how might identity maintenance and corresponding emotional experience look for black versus white women, or disabled black men versus able bodied black men?\ 
+Additionally, the variables for race and gender are not exhaustive, as those who were not white or Black were lumped into a third “Other” category and there were no questions about gender identity. This weakened the ability to test the hypotheses about diffuse status characteristics and suggests follow up work with a more targeted sample that includes more options for gender and race would be especially useful to diving deeper into these patterns. On this note, there was not enough power to include tests of intersectional effects – how might identity maintenance and corresponding emotional experience look for Black versus white women, or disabled Black men versus able bodied Black men?\ 
 
 Lastly, only 102 occupational identities were included in this analysis, and they were matched via a crosswalk that tied similar, but not exactly the same, identities to GSS occupational codes. Further work that gets EPA measurements of all of the GSS occupational codes would be helpful in ensuring that these results apply across the occupational spectrum, even when small differences between occupational identity meaning is included, e.g. the difference between physician’s assistant and pediatrician.\ 
 
@@ -780,3 +795,4 @@ Lastly, only 102 occupational identities were included in this analysis, and the
 
 [^1]: Mother is capitalized to follow the Affect Control Theory tradition when indicating a measured identity. All references to measured identities, behaviors, and emotions will be capitalized.
 [^2]: All EPA measurements referenced in this paper come from this dictionary. 
+[^3]: A full replication package, including data and code for all of the analysis can be found at: [blinded] github repository. 
