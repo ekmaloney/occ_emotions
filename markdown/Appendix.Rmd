@@ -10,7 +10,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
 ## Appendix A: Crosswalk
@@ -42,12 +42,14 @@ library(tidyverse)
 data(gss_all)
 
 #load in the crosswalk and the block_info
-cross_walk <- read_csv("/Users/emilymaloney/2yp/data/Identity to GSS Crosswalk.csv")
-block_info <- read_csv("/Users/emilymaloney/2yp/data/block_info_bayesact.csv")
+cross_walk <- read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/Identity_to_GSS_Crosswalk.csv")
+block_info <- read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/block_info_bayesact.csv")
 
 #fix the string formatting to match 
 cross_walk <- cross_walk %>% 
-              mutate(term = tolower(Identity),
+              mutate(isco88 = 'ISCO-88',
+                     isco88 = as.integer(isco88),
+                     term = Identity,
                      term = str_replace_all(term, " ", "_"),
                      term = str_replace(term, "-", "_"))
 
@@ -56,11 +58,12 @@ cross_block <- left_join(cross_walk, block_info, by = "term")
 
 #select variables I care about 
 cross_block <- cross_block %>% 
-               mutate(isco88 = `ISCO-88`) %>% 
                select(term, isco88, blocks_4)
 
 #make sure the two variables to be joined on are the same type
-gss_all <- gss_all %>% mutate(isco88 = as.integer(isco88))
+gss_all <- gss_all %>% 
+           mutate(isco88 = as.integer(isco88)) %>% 
+           filter(year == 1996)
 
 #join gss with the block_info
 gss_block <- left_join(gss_all, cross_block, by = "isco88")
@@ -70,8 +73,6 @@ occs <- gss_block %>% filter(is.na(blocks_4) & !is.na(isco88) & year == 1996) %>
         group_by(isco88) %>% 
         summarise(num = n())
 
-#mutate so the variables that I want to join on have the same name
-cross_walk <- cross_walk %>% mutate(isco88 = `ISCO-88`)
 
 #join the missing occupations with the cross walk
 occs_cw <- full_join(occs, cross_walk) %>% 
@@ -80,7 +81,7 @@ occs_cw <- full_join(occs, cross_walk) %>%
 
 #read in the isco88 code
 library(readxl)
-isco <- read_excel("/Users/emilymaloney/2yp/data/ISCO88.xls")
+isco <- read_excel("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/ISCO88.xls")
 
 #mutate so the variables that I want to join on have the same name
 isco <- isco %>% mutate(isco88 = `ISCO88(COM) code`)
@@ -199,7 +200,8 @@ kable(tabl2, format = "pandoc", caption = "OCC codes without identity matches")
 skew_scores <- readRDS("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/output/skew_scores.RDS")
 
 kable(skew_scores, format = "pandoc", caption = "Skewness Scores for CFA Indicator Variables",
-      col.names = c("Income (Log)", "Father SEI", "Education", "Prestige"))
+      col.names = c("Income (Log)", "Father SEI", "Education", "Prestige"),
+      digits = 3)
 ```
 
 ![Income Histogram](/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/output/income_hist.png)
