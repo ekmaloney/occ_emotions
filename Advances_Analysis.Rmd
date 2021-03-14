@@ -1,0 +1,365 @@
+---
+title: 'The Emotional Implications of Occupational Deference Structures'
+indent: yes
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+header-includes: \usepackage{setspace}\doublespacing
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+## The Emotional Implications of Occupational Deference Structures
+
+Recent work refining the measurement of occupational status has incorporated formal social psychological theory (Freeland and Hoey 2018; Maloney 2020).  In particular, Maloney (2020) uses affect control theory (Heise 2007, Robinson and Smith-Lovin 2018) and the deference patterns analyzed by Freeland and Hoey (2018) to develop a set of occupational classes, using block models (McFarland, Messing, Nowak, and Westwood 2010). The classes are formed by linking occupational identities that have the same predicted deference relationships to other occupations.   In network terms, they are structurally equivalent.
+
+Here, we move beyond the deference structure to examine what these occupational classes imply for the people who occupy them.  We ask two interrelated questions.  First, we use affect control theory (in the form of INTERACT simulations) to predict what the typical emotional experience would be for a person in these occupational identities. We use the theory to generate hypotheses about each occupational class and emotional experience.  Second, we use the theoretical results to predict how belonging to one occupational class versus another affects an individual's ability to confirm their identity and experience characteristic emotions in their daily lives. Here, we use representative data from the General Social Survey (GSS) with Maloney’s (2020) occupational blocks to explore these questions.  
+
+### Occupational Status and Affect Control Theory
+
+Classic (Weber 1978; Weber, Gerth, and Mills 1946) and modern (Ridgeway 2013) treatments of status argue that it is a basis of influence that is at least somewhat independent (and separable) from material position.   The symbolic social power that comes from cultural assessments of esteem, worthiness, and value to society is not synonymous with control over economic or political resources. However, modern measurements of occupational status have focused on ratings of “social standing” that are largely viewed as imperfect subjective measures of concrete occupational rewards (Hauser and Featherman 1976). As such, the conventional measurement of “occupational prestige” in the past few decades became disengaged from its distinct conceptual standing as an independent socio-cultural basis of influence and deference.  
+
+Freeland and Hoey (2018) addressed this problem by uniting the concept of occupational status with affect control theory.  Affect control theory is a formal, mathematical model of social interaction (Heise 2007).  It describes how people use the cultural meanings associated with identity labels to anticipate what people will do and to react to events that occur.  Therefore, the theory can be used to predict which occupation is culturally expected to defer to which other occupation.  In this context, the ability of the theory to make precise, numerical predictions of how unlikely an event is key to Freeland and Hoey’s (2018) development of a new “deference score” for occupational titles.  
+
+Affect control theory makes these predictions about deference based on three features.  First, it uses a very specific conceptualization of cultural meaning, measuring fundamental cultural sentiment in three dimensions (evaluation—good versus bad, potency—powerful versus powerless, and activity—lively versus quiet) (EPA, hereafter).  Prior research has shown that these three dimensions encompass the majority of cultural meaning of identities, behaviors, and emotions (Scholl citation). Measurements are obtained by surveying participants of the target culture to rate terms on these three dimensions on a scale from -4.3 (extremely bad, weak, inactive) to +4.3 (extremely good, powerful, active). The average response is used as the point estimate of the cultural meaning on each dimension. In this way, terms are located within a three-dimensional cultural space. One of affect control theory’s primary axioms is that individuals endeavor to act in ways that maintain these fundamental meanings of terms. This means that they try to enact behaviors or create situations in which the meaning of a term remains in the same area of cultural space.    
+
+This leads to the second feature: affect control theory uses simple event descriptions (an Actor does a Behavior to an Object-person (ABO hereafter)) to estimate parameters about how transient impressions are formed in the context of social interactions. In other words, equations have been derived which can calculate how much the terms of an event (ABO) have moved in EPA space as a consequence of an event. For example, when an event follows cultural sentiments – e.g. a Mother Loves Child, the transient impressions of the three elements (Mother, Loves, and Child) are very close in EPA space to their corresponding fundamental sentiments. On the other hand, given a situation of Mother Hits Child, the transient impressions of these elements have moved further away from the fundamental sentiments because Mothers, who are Good, somewat powerful, and somewhat active () are not expected to do a Bad, Powerful action () to a good, powerless, active Child ().   
+
+Lastly, this is the third feature of affect control theory: the formalization of cultural unexpectedness. By calculating the sum of squared differences following an event between each element’s fundamental sentiment and transient impression, the deflection of the event is computed. The deflection is an indicator of how culturally dissonant a situation is, and the control process of affect control theory states that people act in ways to keep deflection low or to reduce deflection after a high deflection event.   
+
+Bringing these three features together, affect control theory helps to explain how a stable social order is sustained: because these sentiments are widely shared, and people in general try to maintain them.  It also allows people to respond to odd events in creative ways that tend to restore cultural meanings when they have been disturbed.  (A complete description of affect control theory is beyond the scope of this paper, but Heise [2007] and Robinson and Smith-Lovin [2018] offer more complete overviews for the interested reader.)  
+
+Freeland and Hoey (2018) make use of a new generalization of affect control theory (called BayesACT) in their analyses (Hoey and Schroder 2015; Schröder, Hoey, and Rogers 2016).  BayesACT relaxes the assumption that every identity has a single point location in the three-dimensional evaluation-potency-activity space.  It instead uses Bayesian logic to model the assumption that social actors come into an interaction with a general understanding of who they are in the situation and who they are dealing with (their “priors”), but they then use interactions to update those understandings to develop a more firm view of the situation.
+
+### A Deference Matrix and Deference Scores   
+
+Freeland and Hoey (2018) use BayesACT to calculate a matrix of theoretical predictions about which occupational identities are likely to defer to which other occupational identities.  To be concrete, imagine a (very small) occupational matrix of a surgeon, a secretary and a garbage collector.  This matrix would be a 3x3 matrix, and in each cell would be a number.  That number would be the theoretically computed deflection of the event occupation i defers to occupation j. For instance, in cell 2, 3 would be the deflection of “secretary defers to garbage collector.” This number can be interpreted as an indicator of how unlikely it would be for someone who occupied one occupational identity to defer to the other.  On the diagonal would be the quantities for intra-occupational deference (e.g., how much would it dislocate cultural sentiments for a surgeon to defer to another surgeon).  Cells that are off the diagonal represent the asymmetric (i.e., directional) expectations about how likely one occupation is to defer to another (e.g., how likely is a surgeon to defer to a secretary? Or how likely is a secretary to defer to a surgeon?). (For details about the calculation of these cell values, refer to the original article [Freeland and Hoey 2018].)  
+
+Arguing that status is based on a deference order, Freeland and Hoey (2018) posit that these deflections can be thought of as a measurement of status – it should be more deflecting for higher status occupations defer to others, and vice versa. To create a single measure of an occupation’s status, Freeland and Hoey (2018) averaged across the rows of the deference matrix.  They created a summary measure, which they called a “deference score” that says how likely occupational identity x is to be deferred to by all of the other occupations in their analysis (which included 304 occupations).  They viewed this score as a theoretically motivated reconceptualization of occupational prestige, and presented compelling evidence that it has construct and criterion validity.  
+
+### Using the Information Left Behind  
+
+Maloney (2020) noted that Freeland and Hoey (2018) discarded a great deal of information in the creation of their deference scores.  Creating a single status score for each occupational identity is extremely useful for mapping into conventional survey analyses: occupations are used in most survey analyses as an individual-level variable and are therefore conveniently construed as a unidimensional, interval level measure of some type of social status.  However, the deference matrix also includes a great deal of (theoretical) information about who defers to whom and how patterned deference relations reveal structural positions within the occupational landscape.   
+
+Maloney (2020) made use of this additional information to ask the question: are there classes of occupations that defer to and are deferred to by the same other occupations?  In other words, are there occupations that have the same patterns of deference vis a vis the other occupations?  Her analysis made use of the information that Freeland and Hoey (2018) eliminated when they averaged over the rows of their deference matrix.  
+
+Maloney (2020) did a block model of the complete deference matrix to find what network researchers call “structurally equivalent” sets of social positions (McFarland et al. 2010).  These social positions are occupational occupants who have the same patterns of (theoretically predicted) relationships to each other.  (Note that this is very unlike a community detection or clustering analysis, where the researcher is looking for sets of actors who are likely to interact with each other, and unlikely to interact with others.)  While clustering analysis reveals cliques of nodes that like each other or interact frequently, blockmodeling uncovers similar positions within a network across local community structure. In this way, nodes that serve a similar role within a network can be identified as a position within the larger structure.   
+
+Maloney (2020)’s analysis resulted in four structural positions within the occupational identity deference network. Block 1, the Everyday Specialists, includes occupational identities that are respected for their technical skills, but for whom esteem might not extend far beyond work domain.  Bricklayer and baker are two examples which are very close to the average EPA profile.  Block 2, occupations characterized by their Service-to-Society contributions, contain occupational identities with somewhat higher evaluation and activity.  Several of these identities are more artistic in nature, including decorator and musician.  They also have a somewhat female character, including active but low potency identities like hostess and beautician.  Block 3 has a corresponding male nature, with higher potency but lower evaluation.  Maloney calls these identities the Inconveniently Powerful. They include enforcement identities like bailiff and auditor general, as well as some jobs that have power in heavily male industries like foreman and crane operator.  Block 4 has the highest EPA of all the new classes of occupations, and represents those who are most esteemed and deferred to in the occupational structure.  They include not the highest paid occupations, but the ones that we accord the highest status, like nurse and firefighter.  
+
+The argument that Maloney (2020) made is that these blocks of structurally equivalent occupations constitute classes of occupations in which people have shared deference experiences.  To the extent that other people (1) operate to maintain cultural sentiments and (2) avoid relationships in which those sentiments are difficult to maintain, these blocks of occupations represent a form of theoretically shared experience.  Our core purpose in this paper is to explore the dimensions of that shared experience.
+
+### Emotions in ACT  
+
+ACT encompasses emotional experience as it relates to the enactment of identities within situations. One type of emotion in ACT is the *characteristic emotion*. Characteristic emotions are the emotions that we expect someone to experience in a social position when s/he is perfectly maintaining the cultural sentiments associated with that position (Lively and Heise 2004; MacKinnon 1994). So, if a surgeon is in a hospital setting that locks her into that identity, and is perfectly maintaining it, she should go through her work day experiencing something like the characteristic emotion associated with the identity “surgeon”. 
+
+In general, we expect that individuals will be more likely to experience emotions in their daily lives that are closer in EPA space to their occupational identity's characteristic emotion. However, belonging to different occupational classes may change one's ability to confirm their identity throughout the day because of differences in social or material power. 
+
+For instance, block 2 consists of occupational identities that are artistic and that have slightly higher activity. This suggests that either individuals who are more emotionally expressive will select into these occupations, or that individuals may experience more emotions in their daily interactions than those in other occupations. 
+
+**H1.** Block 2 occupations should have the highest likelihood of expressing emotions. 
+
+Additionally, block 3 occupations are male-typed, high power occupations. This suggests that individuals in this block may be more effective at maintaining the relationship between occupation's characteristic emotion and emotional experience. 
+
+**H2.** The negative relationship between distance from emotion and frequency of experiencing the emotion will be stronger for individuals whose occupation is in Block 3, the block with the highest power.
+
+#read in data
+```{r}
+#libraries
+library(tidyverse)
+library(gssr)
+library(knitr)
+
+#load in all of the gss data
+data(gss_all)
+
+#load in the crosswalk and the block_info
+cross_walk <- readr::read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/new_crosswalk.csv")
+block_info <- read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/block_info_bayesact.csv")
+
+#join the cross walk and the block info
+cross_block <- left_join(cross_walk, block_info, by = "term")
+
+#select variables I care about 
+cross_block <- cross_block %>% 
+  select(term, isco88, blocks_4)
+
+#make sure the two variables to be joined on are the same type
+gss_all <- gss_all %>% mutate(isco88 = as.integer(isco88))
+
+#join gss with the block_info
+gss_block <- dplyr::left_join(gss_all, cross_block, by = "isco88")
+
+
+#################################PREPPING DATA FOR ANALYSIS#################################
+library(haven)
+library(scales)
+
+#continuous variables I want
+cont_vars <- c("year", "id", "ballot", "age", "relig", "realinc", "pasei10", "childs",
+               "educ", "prestg80")
+
+#emotion variables I want
+emotion_vars <- c("angry", "calm", "anxious", "hapfeel", "outraged", "sad", "ashamed", "excited",
+                  "lonely", "fearful", "ovrjoyed", "worried", "contentd", "restless",
+                  "madat", "proud")
+
+#categorical variables I want
+cat_vars <- c("race", "sex", "spwrksta", "blocks_4", "income", "class", "wrkstat", "region", "health", "degree", "term")
+
+#join all the variables for selection
+vars <- c(cont_vars, emotion_vars, cat_vars)
+
+#select only ones I want
+gss_block_emotions <- gss_block %>% select(all_of(vars))
+gss_block_emotions <- gss_block_emotions %>% filter(year == 1996 & (wrkstat == 1))
+
+#capwords function from Kieran's vignette
+capwords <- function(x, strict = FALSE) {
+  cap <- function(x) paste(toupper(substring(x, 1, 1)),
+                           {x <- substring(x, 2); if(strict) tolower(x) else x},
+                           sep = "", collapse = " " )
+  sapply(strsplit(x, split = " "), cap, USE.NAMES = !is.null(names(x)))
+}
+
+##RECODING
+library(purrr)
+
+#recode categorical into factors
+gss_block_emotions <- gss_block_emotions %>% 
+                      modify_at(vars(), haven::zap_missing) %>% 
+                      modify_at(cat_vars, as.character) %>% 
+                      modify_at(emotion_vars, as.numeric) %>%
+                      modify_at(cat_vars, forcats::as_factor) %>% 
+                      modify_at(cat_vars, forcats::fct_relabel, capwords, strict = TRUE) %>% 
+                      mutate(spouse_work = case_when(spwrksta == 1 ~ "working full time",
+                                                     spwrksta == 2 ~ "working part time",
+                                                     spwrksta == 3 ~ "not working",
+                                                     spwrksta == 4 ~ "not working",
+                                                     spwrksta == 5 ~ "retired",
+                                                     spwrksta == 6 ~ "in school",
+                                                     spwrksta == 7 ~ "stay-at-home parent",
+                                                     spwrksta == 8 ~ "other"),
+                             religion = case_when(relig == 1 ~ "Protestant",
+                                                  relig == 2 ~ "Catholic",
+                                                  relig == 3 ~ "Jewish",
+                                                  relig == 4 ~ "Not Religious",
+                                                  relig > 4 & relig < 14 ~ "Other"),
+                             children = case_when(childs == 0 ~ "none",
+                                                  childs > 0 & childs < 3 ~ "1-2",
+                                                  childs >= 3 ~ "3+"),
+                             degree = case_when(degree == 0 ~ "Less than HS",
+                                                degree == 1 ~ "HS",
+                                                degree == 2 ~ "Junior College",
+                                                degree == 3 ~ "Bachelor",
+                                                degree == 4 ~ "Graduate"),
+                             race = case_when(race == 1 ~ "White",
+                                              race == 2 ~ "Black",
+                                              race == 3 ~ "Other"),
+                             sex = case_when(sex == 1 ~ "Male",
+                                             sex == 2 ~ "Female"),
+                             health = case_when(health == 1 ~"Excellent",
+                                                health == 2 ~ "Good",
+                                                health == 3 ~ "Fair",
+                                                health == 4 ~ "Poor"),
+                             health = factor(health, levels = c("Poor", "Fair", "Good", "Excellent")),
+                             children = factor(children, levels = c("none", "1-2", "3+")),
+                             religion = as.factor(religion),
+                             educ = as.integer(educ),
+                             dadsei = scale(pasei10, center = TRUE, scale = TRUE),
+                             log_income = log(realinc),
+                             log_income = as.numeric(log_income),
+                             occ = tolower(term),
+                             age_std = scale(age, center = TRUE, scale = TRUE),
+                             prestg80 = as.integer(prestg80), 
+                             race = as.factor(race),
+                             race = relevel(race, ref = "White"),
+                             race_bin = case_when(race == "White" ~ "White",
+                                                  race == "Black" ~ "Not White",
+                                                  race == "Other" ~ "Not White"))
+```
+
+
+```{r}
+#read in the characteristic emotions for the occupations in analysis
+occs_in_an <- read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/occs_in_analysis.csv")
+
+#name variables so the joining process will work correctly
+occs_in_an <- occs_in_an %>% mutate(occ = term,
+                                    o_e = E,
+                                    o_p = P,
+                                    o_a = A) %>% select(-c(term, E, P, A))
+
+#read in the modifiers
+modifiers <- read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/FullSurveyorInteract_Modifiers.csv")
+
+#the gss emotion words
+gss_emotions <- c("calm",
+                  "outraged",
+                  "happy",
+                  "sad",
+                  "ashamed",
+                  "excited",
+                  "interested",
+                  "lonely",
+                  "fearful",
+                  "overjoyed",
+                  "worried",
+                  "contented",
+                  "anxious",
+                  "tense",
+                  "restless",
+                  "mad",
+                  "at ease",
+                  "angry",
+                  "embarassed",
+                  "proud")
+
+#get the EPA values for the emotion words in the GSS
+gss_words_in_dictionary <- modifiers %>% 
+                           filter(term %in% gss_emotions) %>% 
+                           select(term, E, P, A)
+
+#need to create df to calculate the distance from each emotion word for every occupation
+  #first multiply the list of emotions by 109 (the number of occupations)
+  emotion_words <- tibble(term = rep(gss_words_in_dictionary$term, 109))
+  #next join that list with the EPA values for each one
+  emotion_words <- left_join(emotion_words, gss_words_in_dictionary, by = "term")
+  #create list of occupations with each occ replicated the same # of times as the number of emotion words (18)
+  occs <- tibble(occ = rep(occs_in_an$occ, 18)) %>% arrange(occ)
+  #join that list with the EPA values for each occupational identity 
+  occs <- left_join(occs, occs_in_an, by = "occ")
+
+  #last, bind together
+  occs_emotions <- cbind(emotion_words, occs)
+
+  #calculate the euclidean distance from each emotion word for every occupation (once with the m char emotion and once with the f char emotion)
+  occs_emotions <- occs_emotions %>% mutate(mdist = ((E - e_e)^2 + (P - e_p)^2 + (A - e_a)^2),
+                                          fdist = ((E - fe_e)^2 + (P - fe_p)^2 + (A - fe_a)^2)) %>% 
+                   filter(!is.na(fe_e)) %>% 
+                   filter(term != "interested") %>% 
+                   filter(term != "tense") %>% 
+                   mutate(emotion = term,
+                                emotion = str_replace(emotion, "happy", "hapfeel"),
+                                emotion = str_replace(emotion, "overjoyed", "ovrjoyed"),
+                                emotion = str_replace(emotion, "contented", "contentd"),
+                                emotion = str_replace(emotion, "mad", "madat"))
+
+  #make histogram with the distances from each occupation's characteristic emotion
+ dist_hist <-  ggplot(occs_emotions, mapping = aes(x = mdist)) + 
+               geom_histogram(fill = muted("pink"), binwidth = 2) + 
+               facet_wrap(~term) + 
+               theme_minimal() + 
+               labs(x = "Distance from Occupation Identity Characteristic Emotion")
+#save as image
+ggsave("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/output/dist_hist.png", dist_hist)
+
+#change from long to wide
+occs_emotions_wide <- occs_emotions %>% select(occ, term, mdist, fdist) %>%  
+    pivot_wider(names_from = term, values_from = c(mdist, fdist))
+
+
+#take the df with the gss variables and make it long for the analysis
+gss_long <- gss_block_emotions %>% 
+            pivot_longer(cols = angry:proud, names_to = "emotion", values_to = "count") %>% 
+            mutate(occ = tolower(term))
+
+#fix the names of emotion words so the df with gss responses and the df of emotions & distances are joinable 
+occs_emotions_joining <- occs_emotions %>% 
+                         mutate(emotion = term,
+                                emotion = str_replace(emotion, "happy", "hapfeel"),
+                                emotion = str_replace(emotion, "overjoyed", "ovrjoyed"),
+                                emotion = str_replace(emotion, "contented", "contentd"),
+                                emotion = str_replace(emotion, "mad", "madat")) %>% 
+                         select(occ, emotion, mdist, fdist, o_e, o_p, o_a)
+
+#join the two dfs together
+gss_long_emotions <- left_join(gss_long, occs_emotions_joining, by = c("occ", "emotion"))
+
+#filter out missing variables on: DV (count), sex, age, race, and mat_power (IVs)
+#standardize the predictor variable of dist_emotion
+gss_long_nomiss <- gss_long_emotions %>% 
+                   filter(!is.na(count) & !is.na(sex) & !is.na(age) & !is.na(race)) %>% 
+                   mutate(dist_emotion = scale(mdist, center = TRUE, scale = TRUE))
+
+#ids in final analysis 
+ids_in_analysis <- unique(gss_long_nomiss$id)
+```
+
+```{r, results = 'asis'}
+library(lme4)
+library(stargazer)
+
+m1 <- glmer(count ~ dist_emotion + (1 | id) + (1|emotion), data = gss_long_nomiss, family = poisson())
+
+m2 <- glmer(count ~ dist_emotion + blocks_4 + (1 | id) + (1|emotion), data = gss_long_nomiss, family = poisson())
+
+m3 <- glmer(count ~ dist_emotion + blocks_4 + sex + race + age_std + (1 | id)+ (1|emotion), data = gss_long_nomiss, family = poisson())
+
+m3_5 <- glmer(count ~ dist_emotion + blocks_4 + sex + race + age_std + (1 + dist_emotion | id) +
+                (1|emotion), data = gss_long_nomiss, family = poisson())
+
+m4 <- glmer(count ~ dist_emotion*blocks_4 + sex + age_std + race + (1 + dist_emotion | id) + 
+                (1|emotion), 
+                data = gss_long_nomiss, 
+                family = poisson(),
+               control = lmerControl(optimizer = "bobyqa"))
+
+
+#display results
+stargazer(m1, m2, m3, m3_5, m4,
+          title = "Models 1 through 5",
+          dep.var.labels = "Count",
+          header=FALSE,
+          column.labels=c("M1", "M2", "M3", "M4", "M5"), model.numbers=FALSE,
+          type = "html", out="results_table.html")
+
+
+```
+
+```{r}
+library(ggeffects)
+
+int_eff_preds <- ggpredict(m4, terms = c("dist_emotion", "blocks_4"))
+
+ggplot(int_eff_preds, mapping = aes(x = x, y = predicted)) + 
+      geom_line(mapping = aes(color = group)) + 
+      geom_ribbon(mapping = aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.2) + 
+      theme_minimal() + facet_wrap(~group) + 
+      labs(title = "Interaction between Block and Distance",
+           x = "Distance from Occupation's Characteristic Emotion",
+           y = "Predicted Count")
+
+```
+```{r, eval = FALSE}
+#convergence issue 
+
+library(tidyverse)
+library(lme4)
+library(optimx)
+library(parallel)
+library(minqa)
+
+gss_long_nomiss <- gss_long_nomiss %>% 
+                   mutate(blocks_4 = factor(blocks_4, levels = c("3", "1", "2", "4")))
+
+
+m4 <- glmer(count ~ dist_emotion*blocks_4 + sex + age_std + race + (1 + dist_emotion | id) + 
+                (1|emotion), 
+                data = gss_long_nomiss, 
+                family = poisson(),
+               control = lmerControl(optimizer = "bobyqa"))
+
+ncores <- detectCores()
+diff_optims <- allFit(m4, maxfun = 1e5, parallel = 'multicore', ncpus = ncores)
+
+is.OK <- sapply(diff_optims, is, "merMod")
+diff_optims.OK <- diff_optims[is.OK]
+lapply(diff_optims.OK,function(x) x@optinfo$conv$lme4$messages)
+
+```
+
