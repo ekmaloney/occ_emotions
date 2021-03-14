@@ -1,0 +1,762 @@
+---
+title: "Revision work"
+author: "Emily Maloney"
+date: "2/4/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, results = 'asis')
+```
+
+```{r}
+#libraries
+library(tidyverse)
+library(gssr)
+library(knitr)
+
+#load in all of the gss data
+data(gss_all)
+
+#load in the crosswalk and the block_info
+cross_walk <- readr::read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/new_crosswalk.csv")
+block_info <- readr::read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/block_info_bayesact.csv")
+
+#join the cross walk and the block info
+cross_block <- left_join(cross_walk, block_info, by = "term")
+
+#select variables I care about 
+cross_block <- cross_block %>% 
+  select(term, isco88, blocks_4)
+
+#make sure the two variables to be joined on are the same type
+gss_all <- gss_all %>% mutate(isco88 = as.integer(isco88))
+
+#join gss with the block_info
+gss_block <- dplyr::left_join(gss_all, cross_block, by = "isco88")
+
+
+#################################PREPPING DATA FOR ANALYSIS#################################
+library(haven)
+library(scales)
+
+#continuous variables I want
+cont_vars <- c("year", "id", "ballot", "age", "relig", "realinc", "pasei10", "childs",
+               "educ", "prestg80")
+
+#emotion variables I want
+emotion_vars <- c("angry", "calm", "anxious", "hapfeel", "outraged", "sad", "ashamed", "excited",
+                  "lonely", "fearful", "ovrjoyed", "worried", "contentd", "anxious", "restless",
+                  "madat", "proud")
+
+#categorical variables I want
+cat_vars <- c("race", "sex", "spwrksta", "blocks_4", "income", "class", "wrkstat", "region", "health", "degree", "term")
+
+#join all the variables for selection
+vars <- c(cont_vars, emotion_vars, cat_vars)
+
+#select only ones I want
+gss_block_emotions <- gss_block %>% select(all_of(vars))
+gss_block_emotions <- gss_block_emotions %>% filter(year == 1996 & (wrkstat == 1))
+
+#capwords function from Kieran's vignette
+capwords <- function(x, strict = FALSE) {
+  cap <- function(x) paste(toupper(substring(x, 1, 1)),
+                           {x <- substring(x, 2); if(strict) tolower(x) else x},
+                           sep = "", collapse = " " )
+  sapply(strsplit(x, split = " "), cap, USE.NAMES = !is.null(names(x)))
+}
+
+##RECODING
+library(purrr)
+
+#recode categorical into factors
+gss_block_emotions <- gss_block_emotions %>% 
+                      modify_at(vars(), haven::zap_missing) %>% 
+                      modify_at(cat_vars, as.character) %>% 
+                      modify_at(emotion_vars, as.numeric) %>%
+                      modify_at(cat_vars, forcats::as_factor) %>% 
+                      modify_at(cat_vars, forcats::fct_relabel, capwords, strict = TRUE) %>% 
+                      mutate(spouse_work = case_when(spwrksta == 1 ~ "working full time",
+                                                     spwrksta == 2 ~ "working part time",
+                                                     spwrksta == 3 ~ "not working",
+                                                     spwrksta == 4 ~ "not working",
+                                                     spwrksta == 5 ~ "retired",
+                                                     spwrksta == 6 ~ "in school",
+                                                     spwrksta == 7 ~ "stay-at-home parent",
+                                                     spwrksta == 8 ~ "other"),
+                             religion = case_when(relig == 1 ~ "Protestant",
+                                                  relig == 2 ~ "Catholic",
+                                                  relig == 3 ~ "Jewish",
+                                                  relig == 4 ~ "Not Religious",
+                                                  relig > 4 & relig < 14 ~ "Other"),
+                             children = case_when(childs == 0 ~ "none",
+                                                  childs > 0 & childs < 3 ~ "1-2",
+                                                  childs >= 3 ~ "3+"),
+                             degree = case_when(degree == 0 ~ "Less than HS",
+                                                degree == 1 ~ "HS",
+                                                degree == 2 ~ "Junior College",
+                                                degree == 3 ~ "Bachelor",
+                                                degree == 4 ~ "Graduate"),
+                             race = case_when(race == 1 ~ "White",
+                                              race == 2 ~ "Black",
+                                              race == 3 ~ "Other"),
+                             sex = case_when(sex == 1 ~ "Male",
+                                             sex == 2 ~ "Female"),
+                             health = case_when(health == 1 ~"Excellent",
+                                                health == 2 ~ "Good",
+                                                health == 3 ~ "Fair",
+                                                health == 4 ~ "Poor"),
+                             health = factor(health, levels = c("Poor", "Fair", "Good", "Excellent")),
+                             children = factor(children, levels = c("none", "1-2", "3+")),
+                             religion = as.factor(religion),
+                             educ = as.integer(educ),
+                             dadsei = scale(pasei10, center = TRUE, scale = TRUE),
+                             log_income = log(realinc),
+                             log_income = as.numeric(log_income),
+                             occ = tolower(term),
+                             age_std = scale(age, center = TRUE, scale = TRUE),
+                             prestg80 = as.integer(prestg80), 
+                             race = as.factor(race),
+                             race = relevel(race, ref = "White"),
+                             race_bin = case_when(race == "White" ~ "White",
+                                                  race == "Black" ~ "Not White",
+                                                  race == "Other" ~ "Not White"))
+```
+
+```{r}
+#read in the characteristic emotions for the occupations in analysis
+occs_in_an <- read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/occs_in_analysis.csv")
+
+#name variables so the joining process will work correctly
+occs_in_an <- occs_in_an %>% mutate(occ = term,
+                                    o_e = E,
+                                    o_p = P,
+                                    o_a = A) %>% select(-c(term, E, P, A))
+
+#read in the modifiers
+modifiers <- read_csv("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/data/FullSurveyorInteract_Modifiers.csv")
+
+#the gss emotion words
+gss_emotions <- c("calm",
+                  "outraged",
+                  "happy",
+                  "sad",
+                  "ashamed",
+                  "excited",
+                  "interested",
+                  "lonely",
+                  "fearful",
+                  "overjoyed",
+                  "worried",
+                  "contented",
+                  "anxious",
+                  "tense",
+                  "restless",
+                  "mad",
+                  "at ease",
+                  "angry",
+                  "embarassed",
+                  "proud")
+
+#get the EPA values for the emotion words in the GSS
+gss_words_in_dictionary <- modifiers %>% 
+                           filter(term %in% gss_emotions) %>% 
+                           select(term, E, P, A)
+
+#need to create df to calculate the distance from each emotion word for every occupation
+  #first multiply the list of emotions by 109 (the number of occupations)
+  emotion_words <- tibble(term = rep(gss_words_in_dictionary$term, 109))
+  #next join that list with the EPA values for each one
+  emotion_words <- left_join(emotion_words, gss_words_in_dictionary, by = "term")
+  #create list of occupations with each occ replicated the same # of times as the number of emotion words (18)
+  occs <- tibble(occ = rep(occs_in_an$occ, 18)) %>% arrange(occ)
+  #join that list with the EPA values for each occupational identity 
+  occs <- left_join(occs, occs_in_an, by = "occ")
+
+  #last, bind together
+  occs_emotions <- cbind(emotion_words, occs)
+
+  #calculate the euclidean distance from each emotion word for every occupation (once with the m char emotion and once with the f char emotion)
+  occs_emotions <- occs_emotions %>% mutate(mdist = ((E - e_e)^2 + (P - e_p)^2 + (A - e_a)^2),
+                                          fdist = ((E - fe_e)^2 + (P - fe_p)^2 + (A - fe_a)^2)) %>% filter(!is.na(fe_e))
+
+  #make histogram with the distances from each occupation's characteristic emotion
+ dist_hist <-  ggplot(occs_emotions, mapping = aes(x = mdist)) + 
+               geom_histogram(fill = muted("pink"), binwidth = 2) + 
+               facet_wrap(~term) + 
+               theme_minimal()
+#save as image
+ggsave("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/output/dist_hist.png", dist_hist)
+
+#change from long to wide
+occs_emotions_wide <- occs_emotions %>% select(occ, term, mdist, fdist) %>%  
+    pivot_wider(names_from = term, values_from = c(mdist, fdist))
+
+
+#take the df with the gss variables and make it long for the analysis
+gss_long <- gss_block_emotions %>% 
+            pivot_longer(cols = angry:proud, names_to = "emotion", values_to = "count") %>% 
+            mutate(occ = tolower(term))
+
+#fix the names of emotion words so the df with gss responses and the df of emotions & distances are joinable 
+occs_emotions_joining <- occs_emotions %>% 
+                         mutate(emotion = term,
+                                emotion = str_replace(emotion, "happy", "hapfeel"),
+                                emotion = str_replace(emotion, "overjoyed", "ovrjoyed"),
+                                emotion = str_replace(emotion, "contented", "contentd"),
+                                emotion = str_replace(emotion, "mad", "madat")) %>% 
+                         select(occ, emotion, mdist, fdist, o_e, o_p, o_a)
+
+#join the two dfs together
+gss_long_emotions <- left_join(gss_long, occs_emotions_joining, by = c("occ", "emotion"))
+
+#filter out missing variables on: DV (count), sex, age, race, and mat_power (IVs)
+#standardize the predictor variable of dist_emotion
+gss_long_nomiss <- gss_long_emotions %>% 
+                   filter(!is.na(count) & !is.na(sex) & !is.na(age) & !is.na(race) & !is.na(degree) & 
+                            !is.na(degree) & !is.na(prestg80) & !is.na(income)) %>% 
+                   mutate(distance = case_when(sex == "Female" ~ fdist,
+                                               sex == "Male" ~ mdist),
+                          dist_emotion = scale(distance, center = TRUE, scale = TRUE),
+                          income_std = scale(realinc, center = TRUE, scale = TRUE),
+                          age_std = scale(age, center = TRUE, scale = TRUE),
+                          prestg_std = scale(prestg80, center = TRUE, scale = TRUE))
+
+#ids in final analysis 
+ids_in_analysis <- unique(gss_long_nomiss$id)
+```
+
+```{r}
+#make table of descriptive statistics of the mdist per emotion
+emo_desc <- gss_long_nomiss %>% select(mdist, emotion)
+
+emo_desc <- emo_desc %>% 
+            group_by(emotion) %>% 
+            summarise(mean_dist = mean(mdist, na.rm = TRUE),
+                      sd_dist = sd(mdist, na.rm = TRUE)) %>% 
+            mutate(emotion = str_replace(emotion, "contentd", "contented"),
+                   emotion = str_replace(emotion, "hapfeel", "happy"),
+                   emotion = str_replace(emotion, "madat", "mad"),
+                   emotion = str_replace(emotion, "ovrjoyed", "overjoyed"))
+
+kable(emo_desc, 
+      format = "pandoc", 
+      digits = 3, 
+      caption = "Table 1: Distances from Characteristic Emotion by Emotion DV", 
+      col.names = c("Emotion", "Mean", "Standard Deviation"))
+```
+
+## Comment 1 to address: 
+
+Material resources:  It is not clear exactly what material resources are supposed to be capturing here.  The problem comes from the use of a scale based on several different components.  Some of the components are specifically about occupation, while others are about education and family background. As a result, we don’t know whether the patterns are simply showing that people in higher status/prestigious jobs (as indicated by prestige scores) experience emotions more closely tied to their jobs than those from lower status/prestigious jobs.  Or is it that people with higher levels of education experience emotions more closely tied to their jobs than those with lower levels of education (as a side note, most education scholars would be skeptical of your reliance on years of education instead of discrete categories of educational attainment, such as less than high school, high school degree, some college, BA, MA, grad/professional).  Your argument is that this is about material resources, very broadly defined.  For this to be the case, you would have to show us that the scale operates differently (and more effectively) than the reliance on any individual item.  We believe that use of separate items will be preferable to the use of the scale.  It also will enable you to assess what happens when one is high in one material resource (e.g., education) but low in another (e.g., in a lower paying/status job).
+
+### Response: 
+
+- Split apart the scale into income, education (as degree), and occupational prestige. 
+
+```{r}
+#making descriptive tables
+library(gtsummary)
+descriptives <- gss_block_emotions %>% 
+                filter(id %in% ids_in_analysis) %>% 
+                select(age, degree, sex, race, realinc, prestg80, health, children) %>% 
+                mutate(age = as.numeric(age),
+                       realinc = as.numeric(realinc)) %>% 
+                filter(!is.na(age)) %>% 
+                mutate(age_cat = case_when(age >= 18 & age <= 29 ~ "18-29",
+                                              age > 29 & age <= 44 ~ "30-44",
+                                              age > 44 & age <= 64 ~ "45-64",
+                                              age < 65 ~ "65+"),
+                       age_cat = factor(age_cat))
+  
+
+#print descriptive stats on primary independent variables
+tbl_summary(descriptives, 
+            label = list(degree ~ "Education Level", sex ~ "Sex", race ~ "Race", age ~ "Age", age_cat ~ "Age (factor)",
+                         realinc ~ "Real Income", prestg80 ~ "Occupational Prestige Score", 
+                         health ~ "Health", children ~ "Number of Children"),
+            statistic = all_continuous() ~ "{mean} ({sd}), (min: {min}, max: {max})") %>% 
+  as_kable(caption = "Descriptive Statistics", format = "html")
+```
+
+
+```{r, results = 'asis'}
+
+gss_long_nomiss <- gss_long_nomiss %>% 
+                   mutate(age_cat = case_when(age >= 18 & age <= 29 ~ "18-29",
+                                              age > 29 & age <= 44 ~ "30-44",
+                                              age > 44 & age <= 64 ~ "45-64",
+                                              age < 65 ~ "65+"))
+library(lme4)
+library(stargazer)
+
+m1 <- glmer(count ~ dist_emotion + emotion + (1 | id), 
+            data = gss_long_nomiss, family = poisson(), 
+            control = glmerControl(optimizer = "bobyqa"))
+
+m2 <- glmer(count ~ dist_emotion + income_std + degree + prestg_std + emotion + (1 | id), 
+            data = gss_long_nomiss, family = poisson(), 
+            control = glmerControl(optimizer = "bobyqa"))
+
+m3 <- glmer(count ~ dist_emotion + income_std + emotion + (1 | id), 
+            data = gss_long_nomiss, family = poisson(),
+            control = glmerControl(optimizer = "bobyqa"))
+
+m4 <- glmer(count ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id), 
+            data = gss_long_nomiss, family = poisson(),
+            control = glmerControl(optimizer = "bobyqa"))
+
+stargazer(m1, m2, m3, m4, type = "html")
+```
+
+
+```{r}
+library(rstanarm)
+library(bayesplot)
+library(broom)
+
+sm1 <- stan_glmer(count ~ dist_emotion + emotion + (1 | id), 
+            data = gss_long_nomiss, family = poisson(),
+                      prior = normal(0, 2.5),
+                      prior_intercept = normal(0, 5),
+                      seed = 12345)
+
+sm_nb <- update(sm1, family = neg_binomial_2)
+
+nb_results <- tidy(sm_nb)
+nb_results <- nb_results %>% 
+              mutate(lb = posterior_interval(sm_nb, prob = 0.95)[,1][1:17],
+                       ub = posterior_interval(sm_nb, prob = 0.95)[,2][1:17])
+
+prop_zero <- function(y) mean(y == 0)
+(prop_zero_test1 <- pp_check(sm1, plotfun = "stat", 
+                             stat = "prop_zero", binwidth = .005))
+
+
+
+(prop_zero_test2 <- pp_check(sm_nb, plotfun = "stat", stat = "prop_zero",
+                            binwidth = 0.01))
+# Show graphs for Poisson and negative binomial side by side
+bayesplot_grid(prop_zero_test1 + ggtitle("Poisson"),
+               prop_zero_test2 + ggtitle("Negative Binomial"),
+               grid_args = list(ncol = 2))
+
+loo1 <- loo(sm1, cores = 2)
+loo2 <- loo(sm_nb, cores = 2)
+loo_compare(loo1, loo2)
+
+```
+
+```{r}
+
+m2 <- stan_glmer(count ~ dist_emotion + income_std + degree + prestg_std + emotion + (1 | id), 
+            data = gss_long_nomiss, family = neg_binomial_2(link = "log"), 
+            prior = normal(0, 2.5),
+                      prior_intercept = normal(0, 5),
+                      seed = 12345)
+
+m2_results <- tidy(m2)
+m2_results <- m2_results %>% 
+              mutate(lb = posterior_interval(m2, prob = 0.95)[,1][1:nrow(m2_results)],
+                       ub = posterior_interval(m2, prob = 0.95)[,2][1:nrow(m2_results)])
+
+m3 <- stan_glmer(count ~ dist_emotion + income_std + emotion + (1 | id), 
+            data = gss_long_nomiss, family = neg_binomial_2(link = "log"),
+            prior = normal(0, 2.5),
+                      prior_intercept = normal(0, 5),
+                      seed = 12345)
+
+m3_results <- tidy(m3)
+m3_results <- m3_results %>% 
+              mutate(lb = posterior_interval(m3, prob = 0.95)[,1][1:nrow(m3_results)],
+                       ub = posterior_interval(m3, prob = 0.95)[,2][1:nrow(m3_results)])
+
+m4 <- stan_glmer(count ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id), 
+                 data = gss_long_nomiss, family = neg_binomial_2(link = "log"),
+            prior = normal(0, 2.5),
+                      prior_intercept = normal(0, 5),
+                      seed = 12345)
+
+m4_results <- tidy(m4)
+m4_results <- m4_results %>% 
+              mutate(lb = posterior_interval(m4, prob = 0.95)[,1][1:nrow(m4_results)],
+                       ub = posterior_interval(m4, prob = 0.95)[,2][1:nrow(m4_results)])
+
+
+loo1 <- loo(m2, cores = 2)
+loo2 <- loo(m3, cores = 2)
+loo3 <- loo(m4, cores = 2)
+loo_compare(loo1, loo2, loo3)
+```
+
+```{r}
+gss_long_nomiss <- gss_long_nomiss %>%
+                   mutate(age_cat = case_when(age >= 18 & age <= 29 ~ "18-29",
+                                              age > 29 & age <= 44 ~ "30-44",
+                                              age > 44 & age <= 64 ~ "45-64",
+                                              age < 65 ~ "65+"),
+                          emotion_type = case_when(emotion %in% c("hapfeel", "proud", "ovrjoyed", "contentd", 
+                                                                  "excited", "calm") ~ "good_powerful",
+                                                   emotion %in% c("lonely", "fearful", "ashamed", "worried", "sad", "madat", 
+                                                                  "restless", "anxious") ~ "bad_weak",
+                                                   emotion %in% c("outraged", "angry") ~ "bad_powerful"),
+                          emotion_type = factor(emotion_type, levels = c("good_powerful", "bad_weak", "bad_powerful")),
+                          count_fact = as.factor(count),
+                          count_frac = count/7,
+                          count_group = case_when(count == 0 ~ "None",
+                                                  count > 0 & count < 4 ~ "1-3",
+                                                  count > 3 & count < 7 ~ "4-6",
+                                                  count == 7 ~ "All"),
+                          count_bin = case_when(count < 4 ~ 0,
+                                             count > 3 ~ 1))
+
+gss_long_nomiss$count_fact <- ordered(gss_long_nomiss$count_fact)
+gss_long_nomiss$count_group <- factor(gss_long_nomiss$count_group, levels = c("None", "1-3", "4-6", "All"))
+gss_long_nomiss$count_group <- ordered(gss_long_nomiss$count_group)
+c_logit <- brms::brm(count_fact ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id),
+            data = gss_long_nomiss, family = cumulative("logit"))
+
+c_class <- brms::brm(count_fact ~ dist_emotion + income_std + sex + race + age_cat + (1|emotion) + (1 | id),
+            data = gss_long_nomiss, family = cumulative("logit"))
+
+c_group <- brms::brm(count_group ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id),
+            data = gss_long_nomiss, family = cumulative("logit"))
+
+c_group <- brms::brm(count_group ~ dist_emotion + emotion + (1 | id),
+            data = gss_long_nomiss, family = cumulative("logit"))
+
+c_bin <- brms::brm(count_bin ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id),
+            data = gss_long_nomiss, family = binomial)
+
+pp_check(c_logit)
+pp_check(c_class)
+
+loo_c <- loo(c_logit)
+loo_class <- loo(c_class)
+loo_compare(loo_c, loo_class)
+model_weights(c_logit, c_class)
+
+res <- broom::tidy(c_group)
+
+res <- res[3:24,]
+
+ggplot(data = res, mapping = aes(x = term, y = estimate)) + 
+  geom_point() + 
+  geom_linerange(mapping = aes(x = term, ymin = lower, ymax = upper)) + coord_flip()
+
+
+res2 <- broom::tidy(c_group)
+
+res2 <- res2[4:24,]
+
+ggplot(data = res2, mapping = aes(x = term, y = estimate)) + 
+  geom_point() + 
+  geom_linerange(mapping = aes(x = term, ymin = lower, ymax = upper)) + coord_flip()
+```
+
+```{r}
+library(lme4) 
+
+frac_logit <- glmer(count_frac ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id),
+            data = gss_long_nomiss, family = binomial, control=lmerControl(optimizer="bobyqa",
+                                 optCtrl=list(maxfun=2e5)))
+
+frac_logit
+
+library(lmtest)
+library(sandwich)
+library(merDeriv)
+
+se_glm_robust = coeftest(frac_logit, vcov = vcov(frac_logit, full = TRUE, ranpar = "var"))
+
+se_glm_robust
+
+robust_se <- bread.glmerMod(frac_logit)
+
+estfun.glmerMod(frac_logit)
+
+summary(frac_logit)
+
+library(glmmTMB)
+
+model_glmm = glmmTMB(
+  count_frac ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id),
+            data = gss_long_nomiss,
+  family = binomial,
+  REML = TRUE
+)
+
+model_gam_re = gam(
+  count_frac ~ dist_emotion + income_std + sex + race + age_cat + emotion + s(id, bs = 're'),
+            data = gss_long_nomiss,
+  family = binomial,
+  method = 'REML'
+)
+
+summary(model_gam_re)
+summary(model_glmm)
+
+```
+
+```{r}
+
+```
+
+
+```{r}
+gss_long_nomiss <- gss_long_nomiss %>%
+                   mutate(age_cat = case_when(age >= 18 & age <= 29 ~ "18-29",
+                                              age > 29 & age <= 44 ~ "30-44",
+                                              age > 44 & age <= 64 ~ "45-64",
+                                              age < 65 ~ "65+"),
+                          emotion_type = case_when(emotion %in% c("hapfeel", "proud", "ovrjoyed", "contentd", 
+                                                                  "excited", "calm") ~ "good_powerful",
+                                                   emotion %in% c("lonely", "fearful", "ashamed", "worried", "sad", "madat", 
+                                                                  "restless", "anxious") ~ "bad_weak",
+                                                   emotion %in% c("outraged", "angry") ~ "bad_powerful"),
+                          emotion_type = factor(emotion_type, levels = c("good_powerful", "bad_weak", "bad_powerful")))
+
+
+new_test <- stan_glmer(count ~ dist_emotion + income_std*emotion + sex*emotion + race*emotion +
+                    age_cat*emotion + (1 | id),
+            data = gss_long_nomiss, family = neg_binomial_2(link = "logit"),
+            prior = normal(0, 2.5),
+                      prior_intercept = normal(0, 5),
+                      seed = 12345)
+
+new_results <- tidy(new_test)
+new_results <- new_results %>% 
+              mutate(lb = posterior_interval(new_test, prob = 0.95)[,1][1:nrow(new_results)],
+                       ub = posterior_interval(new_test, prob = 0.95)[,2][1:nrow(new_results)])
+
+new_test_2 <- stan_glmer(count ~ dist_emotion*emotion_type + income_std*emotion_type + sex*emotion_type + race*emotion_type +
+                      age_cat*emotion_type + (1 | id),
+            data = gss_long_nomiss, family = neg_binomial_2(link = "log"),
+                      seed = 12345)
+
+new_test_3 <- stan_glmer(count ~ dist_emotion*emotion_type + income_std + sex + race +
+                      age_cat + (1 | id),
+            data = gss_long_nomiss, family = neg_binomial_2(link = "log"),
+                      seed = 12345)
+
+
+new_results_2 <- tidy(new_test_2)
+new_results_2 <- new_results_2 %>% 
+              mutate(lb = posterior_interval(new_test_2, prob = 0.95)[,1][1:nrow(new_results_2)],
+                       ub = posterior_interval(new_test_2, prob = 0.95)[,2][1:nrow(new_results_2)])
+
+prior_summary(new_test_3)
+```
+
+```{r}
+#visualizing results 
+
+x <- new_test %>%
+     spread_draws(dist_emotion) %>%
+     median_qi()
+
+x2 <- new_test_2 %>%
+     spread_draws(dist_emotion, pos_emotion) %>%
+     median_qi()
+
+new_test %>%
+  spread_draws(dist_emotion) %>%
+  ggplot(aes(x = dist_emotion)) +
+  stat_halfeye()
+
+new_test_3 %>%
+  spread_draws(dist_emotion) %>%
+  ggplot(aes(x = dist_emotion)) +
+  stat_halfeye()
+
+new_test_2 %>%
+  spread_draws(emotion_typebad_weak) %>%
+  ggplot(aes(x = emotion_typebad_weak)) +
+  stat_halfeye()
+
+pp_check(new_test_2)
+
+summary(new_test)
+
+```
+
+
+```{r}
+m6 <- stan_glmer(count ~ dist_emotion*income_std + sex + race + age_cat + emotion + (1 + dist_emotion | id), 
+            data = gss_long_nomiss, family = neg_binomial_2(link = "log"), 
+            prior = normal(0, 2.5),
+                      prior_intercept = normal(0, 5),
+                      seed = 12345)
+
+m7 <- stan_glmer(count ~ dist_emotion*income_std + dist_emotion*sex + race + age_cat + 
+              emotion + (1 + dist_emotion | id), 
+            data = gss_long_nomiss, family = neg_binomial_2(link = "log"), 
+            prior = normal(0, 2.5),
+                      prior_intercept = normal(0, 5),
+                      seed = 12345)
+
+m8 <- stan_glmer(count ~ dist_emotion*sex + dist_emotion*income_std + race + 
+              age_cat + children + emotion + (1 + dist_emotion | id), 
+            data = gss_long_nomiss, family = neg_binomial_2(link = "log"), 
+            prior = normal(0, 2.5),
+                      prior_intercept = normal(0, 5),
+                      seed = 12345)
+
+```
+
+```{r}
+library(flexmix)
+
+m <- FLXMRglm(formula = ~ dist_emotion + income_std + sex + race+
+                    age_cat + emotion, family = "poisson")
+
+mixture_model <- stepFlexmix(count ~ 1, model = FLXMRglmfix(family = "poisson", fixed = ~ dist_emotion),
+                    k = 2, nrep = 3, data = gss_long_nomiss)
+
+
+new_test <- stan_glmer(count ~ 1dist_emotion + income_std*emotion + sex*emotion + race*emotion +
+                    age_cat*emotion + (1 | id),
+            data = gss_long_nomiss, family = neg_binomial_2(link = "log"),
+            prior = normal(0, 2.5),
+                      prior_intercept = normal(0, 5),
+                      seed = 12345)
+
+```
+
+
+You also should consider another possibility: that people in lower status jobs or with lower levels of education may not view their jobs in the same ways that those with higher status or higher levels of education view their jobs.  As an example, when I was a waiter, I never defined myself as a waiter and I never viewed the job as important or salient.  Instead, I viewed it as a way to earn some money. So, if my emotions didn’t correspond with the job, it wasn’t because of the mechanisms that you propose.  To put it differently, to the extent that people live to work (something I suspect is more likely for those in higher status jobs), then the connection between job and emotion may be strong, while to the extent that people work to live, then the connection may be weaker.
+
+- I feel like a version of this is what I was trying to say in with the paragraph in the manuscript here -- 
+
+Another possibility is that individuals with more material power have occupational identities that are more salient within their entire set of identities and thus more important to their baseline sense of self than those with lesser material resources (Alvesson and Robertson 2006; Miles 2014). Because material resources and types of occupational identity are clearly correlated, this may mean that those who have high status occupations find the maintenance of them more necessary for the maintenance of their overall sense of self, causing them to control their interactions within the occupational identity to a higher degree. Furthermore, their interactions outside of their occupation may more closely match those within it, compared with those who have less material power. Both of these processes would lead us to expect that those who have more material and social power will be more effective at shaping situations to ensure that they experience emotions closer to the characteristic meaning of their occupational identity.  Therefore, the third hypothesis predicts a statistical interaction between material power and the relationship between occupational identity and emotional experience.
+
+Maybe I just need to make this more clear? Either way I can't test mechanisms with this dataset 
+
+```{r, results = 'asis'}
+m6 <- glmer(count ~ dist_emotion*income_std + sex + race + age_cat + emotion + (1 + dist_emotion | id), 
+            data = gss_long_nomiss, family = poisson(), 
+            control = glmerControl(optimizer = "bobyqa"))
+
+stargazer(m6, type = "html")
+
+library(sjPlot)
+income_plot <- plot_model(m6, 
+                         type = "int", 
+                         mdrt.values = "minmax",
+                         colors = c("gray8", muted("pink")))
+
+income_plot <- income_plot + theme_minimal() + labs(subtitle = "by Income",
+                                                  x = "distance from emotion",
+                                                  color = "Minimum/Maximum Income Level (std)")
+
+income_plot
+```
+
+## Comment 2  
+
+Gender:  While it is possible that gender operates differently because of differential status, it’s also possible that gender differences in emotion experiences could be a function of gender differences in salience of the worker identity and in the salience of other identities (e.g., parent,  religious identity).  To the extent that other identities also link to emotions and to the women see familial (and religious and other) identities  as more salient than men so (or just that women see work identities as less salient than men do), one would expect the link between occupation and emotion to be less close for women than for men.
+
+```{r, results = 'asis'}
+
+m7 <- glmer(count ~ dist_emotion*income_std + dist_emotion*sex + race + age_cat + emotion + (1 + dist_emotion | id), 
+            data = gss_long_nomiss, family = poisson(), 
+            control = glmerControl(optimizer = "bobyqa"))
+
+m8 <- glmer(count ~ dist_emotion*sex + dist_emotion*income_std + race + 
+              age_cat + children + emotion + (1 + dist_emotion | id), 
+            data = gss_long_nomiss, family = poisson(), 
+            control = glmerControl(optimizer = "bobyqa"))
+
+stargazer(m7, m8, type = "html")
+
+sex_plot <- plot_model(m7, 
+                       type = "int",
+                       colors = c("gray8", muted("pink")))[[1]]
+
+sex_plot <- sex_plot + 
+            theme_minimal() + 
+            labs(subtitle = "by Respondent Sex",
+                 x = "distance from emotion",
+                 color = "Sex")
+
+sex_plot_kid <- plot_model(m8, 
+                       type = "int",
+                       colors = c("gray8", muted("pink")))[[1]]
+
+sex_plot_kid <- sex_plot_kid + 
+            theme_minimal() + 
+            labs(subtitle = "by Respondent Sex, controlling for n kid",
+                 x = "distance from emotion",
+                 color = "Sex")
+
+sex_plot
+sex_plot_kid
+```
+
+
+## Comment 3  
+
+Race:  As currently written, the discussion and analysis of race and emotions are undeveloped and need more attention.
+ -- true. contemplating just removing it? do think it's theoretically very interesting but just don't have the measures to really get at it 
+
+## Comment 4 
+
+Age:  As with gender, there are other reasons (besides the purported status benefit of age) why age operates as your analyses shows. One possibility is a very simple one: age is a proxy for how long a person works in a job and the longer that a person works in a job, the more likely the person’s emotional experiences will correspond with the job.  Another possibility is that there is more emotional tumult in the early years of adulthood (e.g., staring out in the real world, developing relations, family formation, children) than in the later years of adulthood (which would have more stability). If so, it’s not surprising that younger adults’ emotional experiences aren’t as closely tied to their job.  You will need to more carefully assess this and other possibilities for why age operates as it does.  In addition, as noted by the reviewer 3, you should test for other codings of age.  To the extent that age is an indicator of status, do we really believe that there is a straight linear link between age and status: do we really believe that people in their 70s have higher/greater status than those in their 40s and 50s? You should consider a few additional codings of age—including curvilinear patterns, nonlinear (but not curvilinear patterns), age groupings (perhaps 18-24, 25-34, 35-44, 45-54, 55-64, 65 and above or 18-29, 30-44, 45-64, 65 and above).
+
+```{r, results = 'asis'}
+
+m9 <- glmer(count ~ dist_emotion*age_cat + dist_emotion*sex + race + dist_emotion*income_std + emotion +
+              (1 + dist_emotion| id), data = gss_long_nomiss, family = poisson(), 
+            control = glmerControl(optimizer = "bobyqa"))
+
+stargazer(m9, type = "html")
+
+age_plot <- plot_model(m9, type = "int")[[1]]
+
+age_plot + theme_minimal() + 
+            labs(subtitle = "by Age",
+                 x = "distance from emotion",
+                 color = "Age Category")
+
+```
+
+
+## Comment 5  
+In reviewing the analyses, we were curious about the extent to which the patterns (both main and interaction effects) are mostly due to the more positive emotions (e.g., happy, proud) and, in turn, less due to the more negative emotions (e.g., fearful, ashamed, lonely).   You already discuss this some, but we would like to see a more developed summary regarding this issue (although most of the analysis likely could be in an online supplement/appendix).
+
+```{r}
+highepa_emotions <- c("hapfeel", "proud", "ovrjoyed", "contented")
+
+lowepa_emotions <- c("lonely", "fearful", "ashamed", "worried", "sad", "madat", "outraged", "angry")
+
+lowe_highp_emotions <- c("madat", "outraged", "angry")
+```
+
+
+```{r, results = 'asis'}
+run_baseline_models <- function(emotions, t) {
+  gss_emotion_subset <- gss_long_nomiss %>% 
+                        filter(emotion %in% emotions) %>% 
+                        mutate(dist_emotion = scale(distance, center = TRUE, scale = TRUE))
+  
+  m1 <- glmer(count ~ dist_emotion + emotion + (1 | id), data = gss_emotion_subset, family = poisson())
+
+  m2 <- glmer(count ~ dist_emotion + income_std + degree + prestg_std + emotion + (1 | id), data = gss_emotion_subset, family = poisson(), control = glmerControl(optimizer = "bobyqa"))
+  
+  m3 <- glmer(count ~ dist_emotion + income_std + emotion + (1 | id), 
+              data = gss_emotion_subset, family = poisson(), control = glmerControl(optimizer = "bobyqa"))
+  
+  m4 <- glmer(count ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id), data = gss_emotion_subset, family = poisson(), control = glmerControl(optimizer = "bobyqa"))
+  
+  stargazer(m1, m2, m3, m4, title = t, type = "html")
+}
+
+run_baseline_models(highepa_emotions, "Happy, Proud, Overjoyed")
+run_baseline_models(lowepa_emotions, "Lonely, Fearful, Ashamed, Worried, Sad")
+run_baseline_models(lowe_highp_emotions, "Mad At, Outraged, Angry")
+```
+
+
