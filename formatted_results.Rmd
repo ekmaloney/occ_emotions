@@ -1,0 +1,292 @@
+---
+title: "New Results"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = FALSE)
+```
+
+
+```{r}
+library(drake)
+library(texreg)
+loadd(logit_bin)
+loadd(logit_control)
+
+htmlreg(l = list(logit_bin, logit_control[[1]], logit_control[[2]], logit_control[[3]]),
+             file = "output/main_table.html",
+        custom.coef.map = list("dist_emotion" = "Distance from Emotion",
+                               "income_std" = "Income (std)",
+                               "degreeLess than HS" = "Less than HS",
+                               "degreeHS" = "High School",
+                               "degreeJunior College" = "Junior College",
+                               "degreeGraduate" = "Graduate Degree",
+                               "sexMale" = "Male",
+                               "raceBlack" = "Black",
+                               "raceOther" = "Other Race", 
+                               "age_cat30-44" = "30-44",
+                               "age_cat45-64" = "45-64",
+                               "prestg_std" = "Occupational Prestige (std)"))
+```
+
+```{r}
+loadd(logit_int_models)
+
+htmlreg(l = list(logit_int_models[[1]], logit_int_models[[2]], 
+                logit_int_models[[3]], logit_int_models[[4]]),
+        file = "output/int_table.html",
+        custom.coef.map = list("dist_emotion" = "Distance from Emotion",
+                               "income_std" = "Income (std)",
+                               "dist_emotion:income_std" = "Dist Emotion*Income",
+                               "degreeLess than HS" = "Less than HS",
+                               "degreeHS" = "High School",
+                               "degreeJunior College" = "Junior College",
+                               "degreeGraduate" = "Graduate Degree",
+                               "dist_emotion:degreeLess than HS" = "Dist*Less than HS",
+                               "dist_emotion:degreeHS" = "Dist*HS",
+                               "dist_emotion:degreeJunior College" = "Dist*Junior College",
+                               "dist_emotion:degreeGraduate" = "Dist*Graduate Degree",
+                               "sexMale" = "Male",
+                               "dist_emotion:sexMale" = "Dist*Male",
+                               "raceBlack" = "Black",
+                               "raceOther" = "Other Race", 
+                               "age_cat30-44" = "30-44",
+                               "age_cat45-64" = "45-64",
+                               "children1-2" = "1-2 Children",
+                               "children3+" = "3+ Children"))
+```
+
+```{r, eval = FALSE}
+library(sjPlot)
+loadd(gss_analysis)
+
+emotion_intercept <- plot_model(m, type = "pred", terms = "emotion", sort.est = TRUE)
+
+int_plot <- emotion_intercept + coord_flip() + theme_minimal()
+ggsave("output/int_plot.png", int_plot)
+
+income_int <- plot_model(logit_int_models[[1]], type = "pred", terms = c("dist_emotion[all]", "income_std"))
+income_int <- income_int + theme_minimal()
+ggsave("output/income_int_plot.png", income_int)
+
+degree_int <- plot_model(logit_int_models[[2]], type = "pred", terms = c("dist_emotion[all]", "degree"))
+degree_int <- degree_int + theme_minimal()
+ggsave("output/degree_int_plot.png", degree_int)
+
+sex_int <- plot_model(logit_int_models[[3]], type = "pred", terms = c("dist_emotion[all]", "sex"))
+sex_int <- sex_int + theme_minimal()
+ggsave("output/sex_int_plot.png", sex_int)
+
+plot_model(logit_int_models[[4]], type = "pred", terms = c("dist_emotion[all]", "age_cat"))
+
+```
+
+```{r}
+loadd(good_power_mod)
+
+htmlreg(l = list(good_power_mod[[1]], good_power_mod[[2]][[1]], 
+                good_power_mod[[2]][[2]], good_power_mod[[2]][[3]],
+                good_power_mod[[2]][[4]], good_power_mod[[2]][[5]]),
+        file = "output/good_power_table.html",
+        custom.coef.map = list("dist_emotion" = "Distance from Emotion",
+                               "income_std" = "Income (std)",
+                               "dist_emotion:income_std" = "Dist Emotion*Income",
+                               "degreeLess than HS" = "Less than HS",
+                               "degreeHS" = "High School",
+                               "degreeJunior College" = "Junior College",
+                               "degreeGraduate" = "Graduate Degree",
+                               "dist_emotion:degreeLess than HS" = "Dist*Less than HS",
+                               "dist_emotion:degreeHS" = "Dist*HS",
+                               "dist_emotion:degreeJunior College" = "Dist*Junior College",
+                               "dist_emotion:degreeGraduate" = "Dist*Graduate Degree",
+                               "sexMale" = "Male",
+                               "dist_emotion:sexMale" = "Dist*Male",
+                               "raceBlack" = "Black",
+                               "raceOther" = "Other Race", 
+                               "age_cat30-44" = "30-44",
+                               "age_cat45-64" = "45-64",
+                               "children1-2" = "1-2 Children",
+                               "children3+" = "3+ Children"))
+
+```
+
+```{r}
+loadd(bad_weak_mod)
+
+htmlreg(l = list(bad_weak_mod[[1]], bad_weak_mod[[2]][[1]], 
+                bad_weak_mod[[2]][[2]], bad_weak_mod[[2]][[3]],
+                bad_weak_mod[[2]][[4]], bad_weak_mod[[2]][[5]]),
+        file = "output/bad_weak_table.html",
+        custom.coef.map = list("dist_emotion" = "Distance from Emotion",
+                               "income_std" = "Income (std)",
+                               "dist_emotion:income_std" = "Dist Emotion*Income",
+                               "degreeLess than HS" = "Less than HS",
+                               "degreeHS" = "High School",
+                               "degreeJunior College" = "Junior College",
+                               "degreeGraduate" = "Graduate Degree",
+                               "dist_emotion:degreeLess than HS" = "Dist*Less than HS",
+                               "dist_emotion:degreeHS" = "Dist*HS",
+                               "dist_emotion:degreeJunior College" = "Dist*Junior College",
+                               "dist_emotion:degreeGraduate" = "Dist*Graduate Degree",
+                               "sexMale" = "Male",
+                               "dist_emotion:sexMale" = "Dist*Male",
+                               "raceBlack" = "Black",
+                               "raceOther" = "Other Race", 
+                               "age_cat30-44" = "30-44",
+                               "age_cat45-64" = "45-64",
+                               "children1-2" = "1-2 Children",
+                               "children3+" = "3+ Children"))
+
+```
+
+```{r}
+loadd(bad_power_mod)
+
+htmlreg(l = list(bad_power_mod[[1]], bad_power_mod[[2]][[1]], 
+                bad_power_mod[[2]][[2]], bad_power_mod[[2]][[3]],
+                bad_power_mod[[2]][[4]], bad_power_mod[[2]][[5]]),
+        file = "output/bad_power_table.html",
+        custom.coef.map = list("dist_emotion" = "Distance from Emotion",
+                               "income_std" = "Income (std)",
+                               "dist_emotion:income_std" = "Dist Emotion*Income",
+                               "degreeLess than HS" = "Less than HS",
+                               "degreeHS" = "High School",
+                               "degreeJunior College" = "Junior College",
+                               "degreeGraduate" = "Graduate Degree",
+                               "dist_emotion:degreeLess than HS" = "Dist*Less than HS",
+                               "dist_emotion:degreeHS" = "Dist*HS",
+                               "dist_emotion:degreeJunior College" = "Dist*Junior College",
+                               "dist_emotion:degreeGraduate" = "Dist*Graduate Degree",
+                               "sexMale" = "Male",
+                               "dist_emotion:sexMale" = "Dist*Male",
+                               "raceBlack" = "Black",
+                               "raceOther" = "Other Race", 
+                               "age_cat30-44" = "30-44",
+                               "age_cat45-64" = "45-64",
+                               "children1-2" = "1-2 Children",
+                               "children3+" = "3+ Children"))
+
+```
+
+```{r, eval = TRUE}
+library(drake)
+library(gtsummary)
+library(tidyverse)
+loadd(gss_analysis)
+
+descriptives <- gss_analysis %>% 
+                group_by(id) %>% 
+                slice(1) %>% 
+                ungroup() %>% 
+                filter(!is.na(occ)) %>% 
+                select(age, 
+                       age_cat,
+                       realinc,
+                       income_std,
+                       sex,
+                       race,
+                       degree,
+                       children) %>% 
+                mutate(realinc = as.integer(realinc)) %>% 
+                as.data.frame()
+
+d_table <- descriptives %>% tbl_summary()
+
+gtsave
+
+```
+
+```{r}
+loadd(logit_control)
+
+logit_control[[3]]
+broom::tidy(logit_control[[3]])
+
+x <- coef(logit_control[[3]])
+
+main_eff <- plot_model(logit_control[[3]], type = "pred", term = "dist_emotion[all]") +
+            theme_minimal() + labs(title = "Predicted Probabilities",
+                                   subtitle = "of Reporting Emotional Experience more than Half the Week",
+                                   x = "distance between characteristic emotion and emotion (std)",
+                                   y = "probability")
+
+main_eff
+
+ggsave("output/dist_emo_main.png", main_eff)
+
+
+degree_eff <- plot_model(logit_control[[3]], type = "pred", term = "degree") +
+            theme_minimal() + labs(title = "Predicted Probabilities",
+                                   subtitle = "of Reporting Emotional Experience more than Half the Week",
+                                   x = "distance between characteristic emotion and emotion (std)",
+                                   y = "probability")
+
+degree_eff
+```
+
+```{r}
+loadd(logit_control)
+
+emotion_eff <- plot_model(logit_control[[3]], type = "eff", terms = "emotion", se = TRUE,
+                          order.terms = c(7, 3, 4, 5, 15, 2, 6, 8, 9, 10, 11, 12, 13, 14)) +
+            theme_minimal() + labs(title = "Predicted Probabilities",
+                                   subtitle = "of Reporting Emotional Experience more than Half the Week",
+                                   x = "specific emotion",
+                                   y = "probability") + coord_flip()
+
+
+new_plot_data <- emotion_eff[["data"]]
+new_plot_data <- new_plot_data %>% mutate(emotion_name = emotion_eff[["plot_env"]][["x_lab"]])
+
+ggplot(data = new_plot_data, mapping = aes(x = reorder(emotion_name, predicted), y = predicted)) + 
+      geom_point() + geom_linerange(aes(x = reorder(emotion_name, predicted), ymin = conf.low,
+                                        ymax = conf.high)) + coord_flip() + theme_minimal() +
+  labs(title = "Predicted Probabilities",
+                                   subtitle = "of Reporting Emotional Experience more than Half the Week",
+                                   x = "specific emotion",
+                                   y = "probability") + coord_flip()
+
+```
+
+```{r}
+loadd(occs_emotions)
+
+emotion_eff <- get_model_data(logit_control[[3]], type = c("eff"), terms = "emotion")
+
+
+corr_test <- occs_emotions %>% 
+             group_by(term) %>% 
+             summarise(a_m_dist = mean(mdist),
+                       a_f_dist = mean(fdist)) %>% 
+             filter(term != "interested" & term != "restless") %>% 
+             ungroup() %>% 
+             mutate(eff = emotion_eff$predicted)
+
+library(corrr)
+
+cor.test(corr_test$a_m_dist, corr_test$eff)
+cor.test(corr_test$a_f_dist, corr_test$eff)
+
+cor(corr_test$a_m_dist, corr_test$eff)
+cor(corr_test$a_f_dist, corr_test$eff)
+
+```
+
+```{r}
+loadd(logit_int_models)
+
+x <- plot_model(logit_int_models[[1]], type = "pred", 
+           terms = c("dist_emotion [all]", "income_std"))
+
+x + labs(title = "Predicted Probabilities",
+         subtitle = "by income level",
+         x = "distance from emotion",
+         y = "probability",
+         color = "income (std)") + theme_minimal()
+
+```
+
