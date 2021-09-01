@@ -189,7 +189,7 @@ gss_words_in_dictionary <- modifiers %>%
                facet_wrap(~term) + 
                theme_minimal()
 #save as image
-ggsave(here("output/dist_hist.png"), dist_hist)
+ggsave("/Users/emilymaloney/Dropbox/Grad_School/Non-class Research/occ_emotions/output/dist_hist.png", dist_hist)
 
 #change from long to wide
 occs_emotions_wide <- occs_emotions %>% select(occ, term, mdist, fdist) %>%  
@@ -216,7 +216,7 @@ gss_long_emotions <- left_join(gss_long, occs_emotions_joining, by = c("occ", "e
 #filter out missing variables on: DV (count), sex, age, race, and mat_power (IVs)
 #standardize the predictor variable of dist_emotion
 gss_long_nomiss <- gss_long_emotions %>% 
-                   filter(!is.na(count) & !is.na(sex) & !is.na(age) & !is.na(race) & !is.na(degree) & 
+                   filter(!is.na(count) & !is.na(sex) & !is.na(age) & !is.na(race) & !is.na(childs) & 
                             !is.na(degree) & !is.na(prestg80) & !is.na(income)) %>% 
                    mutate(distance = case_when(sex == "Female" ~ fdist,
                                                sex == "Male" ~ mdist),
@@ -249,7 +249,13 @@ kable(emo_desc,
       col.names = c("Emotion", "Mean", "Standard Deviation"))
 ```
 
-#Changing material power:
+## Comment 1 to address: 
+
+Material resources:  It is not clear exactly what material resources are supposed to be capturing here.  The problem comes from the use of a scale based on several different components.  Some of the components are specifically about occupation, while others are about education and family background. As a result, we don’t know whether the patterns are simply showing that people in higher status/prestigious jobs (as indicated by prestige scores) experience emotions more closely tied to their jobs than those from lower status/prestigious jobs.  Or is it that people with higher levels of education experience emotions more closely tied to their jobs than those with lower levels of education (as a side note, most education scholars would be skeptical of your reliance on years of education instead of discrete categories of educational attainment, such as less than high school, high school degree, some college, BA, MA, grad/professional).  Your argument is that this is about material resources, very broadly defined.  For this to be the case, you would have to show us that the scale operates differently (and more effectively) than the reliance on any individual item.  We believe that use of separate items will be preferable to the use of the scale.  It also will enable you to assess what happens when one is high in one material resource (e.g., education) but low in another (e.g., in a lower paying/status job).
+
+### Response: 
+
+- Split apart the scale into income, education (as degree), and occupational prestige. 
 
 ```{r}
 #making descriptive tables
@@ -276,7 +282,6 @@ tbl_summary(descriptives,
   as_kable(caption = "Descriptive Statistics", format = "html")
 ```
 
-#Original Model
 
 ```{r, results = 'asis'}
 
@@ -284,289 +289,157 @@ gss_long_nomiss <- gss_long_nomiss %>%
                    mutate(age_cat = case_when(age >= 18 & age <= 29 ~ "18-29",
                                               age > 29 & age <= 44 ~ "30-44",
                                               age > 44 & age <= 64 ~ "45-64",
-                                              age < 65 ~ "65+"))
+                                              age < 65 ~ "65+"),
+                          pos_emotion = if_else(emotion %in% c("happy", "overjoyed", "calm",
+                                                                 "excited", "interested", "contented", "proud"), 
+                                                  1, 0))
 library(lme4)
 library(stargazer)
 
-m1 <- glmer(count ~ dist_emotion + emotion + (1 | id), 
-            data = gss_long_nomiss, family = poisson(), 
-            control = glmerControl(optimizer = "bobyqa"))
 
-m2 <- glmer(count ~ dist_emotion + income_std + degree + prestg_std + emotion + (1 | id), 
-            data = gss_long_nomiss, family = poisson(), 
-            control = glmerControl(optimizer = "bobyqa"))
-
-m3 <- glmer(count ~ dist_emotion + income_std + emotion + (1 | id), 
+new_test <- glmer(count ~ dist_emotion + income_std*emotion + sex*emotion + race*emotion + 
+                    age_cat*emotion + (1 | id), 
             data = gss_long_nomiss, family = poisson(),
             control = glmerControl(optimizer = "bobyqa"))
 
-m4 <- glmer(count ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id), 
+new_test_2 <- glmer(count ~ dist_emotion*pos_emotion + income_std*emotion + sex*emotion + race*emotion + 
+                      age_cat*emotion + (1 | id), 
             data = gss_long_nomiss, family = poisson(),
             control = glmerControl(optimizer = "bobyqa"))
 
-stargazer(m1, m2, m3, m4)
+stargazer(m1, m2, m3, m4, type = "html")
 ```
 
-#Reviewer: Negative Binomial Model instead -- 
+You also should consider another possibility: that people in lower status jobs or with lower levels of education may not view their jobs in the same ways that those with higher status or higher levels of education view their jobs.  As an example, when I was a waiter, I never defined myself as a waiter and I never viewed the job as important or salient.  Instead, I viewed it as a way to earn some money. So, if my emotions didn’t correspond with the job, it wasn’t because of the mechanisms that you propose.  To put it differently, to the extent that people live to work (something I suspect is more likely for those in higher status jobs), then the connection between job and emotion may be strong, while to the extent that people work to live, then the connection may be weaker.
 
-```{r}
-library(rstanarm)
-library(bayesplot)
-library(broom)
-library(brms)
-library(brmsfit)
+- I feel like a version of this is what I was trying to say in with the paragraph in the manuscript here -- 
 
-nb_1 <- stan_glmer(count ~ dist_emotion + emotion + (1 | id), 
-            data = gss_long_nomiss, family = neg_binomial_2(link = "log"), 
-            prior = normal(0, 2.5),
-                      prior_intercept = normal(0, 5),
-                      seed = 12345)
+Another possibility is that individuals with more material power have occupational identities that are more salient within their entire set of identities and thus more important to their baseline sense of self than those with lesser material resources (Alvesson and Robertson 2006; Miles 2014). Because material resources and types of occupational identity are clearly correlated, this may mean that those who have high status occupations find the maintenance of them more necessary for the maintenance of their overall sense of self, causing them to control their interactions within the occupational identity to a higher degree. Furthermore, their interactions outside of their occupation may more closely match those within it, compared with those who have less material power. Both of these processes would lead us to expect that those who have more material and social power will be more effective at shaping situations to ensure that they experience emotions closer to the characteristic meaning of their occupational identity.  Therefore, the third hypothesis predicts a statistical interaction between material power and the relationship between occupational identity and emotional experience.
 
-nb_2 <- stan_glmer(count ~ dist_emotion + income_std + degree + prestg_std + emotion + (1 | id), 
-            data = gss_long_nomiss, family = neg_binomial_2(link = "log"), 
-            prior = normal(0, 2.5),
-                      prior_intercept = normal(0, 5),
-                      seed = 12345)
+Maybe I just need to make this more clear? Either way I can't test mechanisms with this dataset 
 
-saveRDS(nb_1, here("output/nb_1.RDS"))
-saveRDS(nb_2, here("output/nb_2.RDS"))
+```{r, results = 'asis'}
+m6 <- glmer(count ~ dist_emotion*income_std + sex + race + age_cat + emotion + (1 + dist_emotion | id), 
+            data = gss_long_nomiss, family = poisson(), 
+            control = glmerControl(optimizer = "bobyqa"))
 
-nb_bin <- brms::brm(count ~ dist_emotion + emotion + (1 | id), 
-            data = gss_long_nomiss, family = zero_inflated_negbinomial(link = "log"))
+stargazer(m6, type = "html")
 
-nb_control <- brms::brm(count ~ dist_emotion + income_std + degree + prestg_std + emotion + (1 | id), 
-            data = gss_long_nomiss, family = zero_inflated_negbinomial(link = "log"))
+library(sjPlot)
+income_plot <- plot_model(m6, 
+                         type = "int", 
+                         mdrt.values = "minmax",
+                         colors = c("gray8", muted("pink")))
 
-saveRDS(nb_bin, here("output/nb_bin.RDS"))
-saveRDS(nb_control, here("output/nb_control.RDS"))
+income_plot <- income_plot + theme_minimal() + labs(subtitle = "by Income",
+                                                  x = "distance from emotion",
+                                                  color = "Minimum/Maximum Income Level (std)")
 
+income_plot
 ```
 
-### Issues with Neg. Binomial 
-```{r}
-rstanarm::pp_check(nb_1)
-pp_check(nb_2)
-```
+## Comment 2  
 
+Gender:  While it is possible that gender operates differently because of differential status, it’s also possible that gender differences in emotion experiences could be a function of gender differences in salience of the worker identity and in the salience of other identities (e.g., parent,  religious identity).  To the extent that other identities also link to emotions and to the women see familial (and religious and other) identities  as more salient than men so (or just that women see work identities as less salient than men do), one would expect the link between occupation and emotion to be less close for women than for men.
 
-## How to deal with DV distribution?
-```{r}
-gss_long_nomiss <- gss_long_nomiss %>%
-                   mutate(age_cat = case_when(age >= 18 & age <= 29 ~ "18-29",
-                                              age > 29 & age <= 44 ~ "30-44",
-                                              age > 44 & age <= 64 ~ "45-64",
-                                              age < 65 ~ "65+"),
-                          emotion_type = case_when(emotion %in% c("hapfeel", "proud", "ovrjoyed", "contentd", 
-                                                                  "excited", "calm") ~ "good_powerful",
-                                                   emotion %in% c("lonely", "fearful", "ashamed", "worried", "sad", "madat", 
-                                                                  "restless", "anxious") ~ "bad_weak",
-                                                   emotion %in% c("outraged", "angry") ~ "bad_powerful"),
-                          emotion_type = factor(emotion_type, levels = c("good_powerful", "bad_weak", "bad_powerful")),
-                          count_fact = as.factor(count),
-                          count_frac = count/7,
-                          count_group = case_when(count == 0 ~ "None",
-                                                  count > 0 & count < 4 ~ "1-3",
-                                                  count > 3 & count < 7 ~ "4-6",
-                                                  count == 7 ~ "All"),
-                          count_bin = case_when(count < 4 ~ 0,
-                                             count > 3 ~ 1),
-                          emotion_type = case_when(emotion %in% c("hapfeel", "proud", "ovrjoyed", "contentd", 
-                                                                  "excited", "calm") ~ "good_powerful",
-                                                   emotion %in% c("lonely", "fearful", "ashamed", "worried", "sad", "madat", 
-                                                                  "restless", "anxious") ~ "bad_weak",
-                                                   emotion %in% c("outraged", "angry") ~ "bad_powerful"),
-                          emotion_type = factor(emotion_type, levels = c("good_powerful", "bad_weak", "bad_powerful")))
+```{r, results = 'asis'}
 
-gss_long_nomiss$count_fact <- ordered(gss_long_nomiss$count_fact)
-gss_long_nomiss$count_group <- factor(gss_long_nomiss$count_group, levels = c("None", "1-3", "4-6", "All"))
-gss_long_nomiss$count_group <- ordered(gss_long_nomiss$count_group)
+m7 <- glmer(count ~ dist_emotion*income_std + dist_emotion*sex + race + age_cat + emotion + (1 + dist_emotion | id), 
+            data = gss_long_nomiss, family = poisson(), 
+            control = glmerControl(optimizer = "bobyqa"))
 
-```
+m8 <- glmer(count ~ dist_emotion*sex + dist_emotion*income_std + race + 
+              age_cat + children + emotion + (1 + dist_emotion | id), 
+            data = gss_long_nomiss, family = poisson(), 
+            control = glmerControl(optimizer = "bobyqa"))
 
-### Cumulative Logit, no grouping
+stargazer(m7, m8, type = "html")
 
-```{r}
-c_logit_bin <- brms::brm(count_fact ~ dist_emotion + emotion + (1 | id),
-            data = gss_long_nomiss, family = cumulative("logit"))
+sex_plot <- plot_model(m7, 
+                       type = "int",
+                       colors = c("gray8", muted("pink")))[[2]]
 
-c_logit_control <- brms::brm(count_fact ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id),
-            data = gss_long_nomiss, family = cumulative("logit"))
+sex_plot <- sex_plot + 
+            theme_minimal() + 
+            labs(subtitle = "by Respondent Sex",
+                 x = "distance from emotion",
+                 color = "Sex")
 
-saveRDS(c_logit_bin, here("output/c_logit_bin.RDS"))
-saveRDS(c_logit_control, here("output/c_logit_control.RDS"))
-```
+sex_plot_kid <- plot_model(m8, 
+                       type = "int",
+                       colors = c("gray8", muted("pink")))[[1]]
 
-### Cumulative Logit, Grouped
-```{r}
-c_group_bin <- brms::brm(count_group ~ dist_emotion + emotion + (1 | id),
-            data = gss_long_nomiss, family = cumulative("logit"))
+sex_plot_kid <- sex_plot_kid + 
+            theme_minimal() + 
+            labs(subtitle = "by Respondent Sex, controlling for n kid",
+                 x = "distance from emotion",
+                 color = "Sex")
 
-c_group_cont <- brms::brm(count_group ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id),
-            data = gss_long_nomiss, family = cumulative("logit"))
-
-saveRDS(c_group_bin, here("output/c_group_bin.RDS"))
-saveRDS(c_group_cont, here("output/c_group_cont.RDS"))
-
-
-c_bin_b <- brms::brm(count_bin ~ dist_emotion + emotion + (1 | id),
-            data = gss_long_nomiss, family = binomial)
-
-c_bin_control <- brms::brm(count_bin ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id),
-            data = gss_long_nomiss, family = binomial)
-
-saveRDS(c_bin_b, here("output/c_bin_b.RDS"))
-saveRDS(c_bin_control, here("output/c_bin_control.RDS"))
-
-
-library(lme4) 
-library(glmmTMB)
-library(glmnet)
-library(mgcv)
-
-model_gam_bin <- gam(
-                count_frac ~ dist_emotion + emotion + s(id, bs = 're'),
-                          data = gss_long_nomiss,
-                family = binomial,
-                method = 'REML'
-)
-
-model_gam_cont <- gam(
-  count_frac ~ dist_emotion + income_std + sex + race + age_cat + emotion + s(id, bs = 're'),
-            data = gss_long_nomiss,
-  family = binomial,
-  method = 'REML'
-)
-
-saveRDS(model_gam_bin, here("output/model_gam_bin.RDS"))
-saveRDS(model_gam_cont, here("output/model_gam_cont.RDS"))
+sex_plot
+sex_plot_kid
 ```
 
 
-### Binary 
-```{r}
-c_bin_b <- brms::brm(count_bin ~ dist_emotion + emotion + (1 | id),
-            data = gss_long_nomiss, family = binomial)
+## Comment 3  
 
-c_bin_control <- brms::brm(count_bin ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id),
-            data = gss_long_nomiss, family = binomial)
-```
+Race:  As currently written, the discussion and analysis of race and emotions are undeveloped and need more attention.
+ -- true. contemplating just removing it? do think it's theoretically very interesting but just don't have the measures to really get at it 
 
-### Fractional Logit
+## Comment 4 
 
-```{r}
-library(lme4) 
-library(glmmTMB)
+Age:  As with gender, there are other reasons (besides the purported status benefit of age) why age operates as your analyses shows. One possibility is a very simple one: age is a proxy for how long a person works in a job and the longer that a person works in a job, the more likely the person’s emotional experiences will correspond with the job.  Another possibility is that there is more emotional tumult in the early years of adulthood (e.g., staring out in the real world, developing relations, family formation, children) than in the later years of adulthood (which would have more stability). If so, it’s not surprising that younger adults’ emotional experiences aren’t as closely tied to their job.  You will need to more carefully assess this and other possibilities for why age operates as it does.  In addition, as noted by the reviewer 3, you should test for other codings of age.  To the extent that age is an indicator of status, do we really believe that there is a straight linear link between age and status: do we really believe that people in their 70s have higher/greater status than those in their 40s and 50s? You should consider a few additional codings of age—including curvilinear patterns, nonlinear (but not curvilinear patterns), age groupings (perhaps 18-24, 25-34, 35-44, 45-54, 55-64, 65 and above or 18-29, 30-44, 45-64, 65 and above).
 
-loadd()
+```{r, results = 'asis'}
 
-model_gam_bin <- gam(count_frac ~ dist_emotion + emotion + s(id, bs = 're'),
-                          data = gss_long_nomiss,
-                family = binomial,
-                method = 'REML')
+m9 <- glmer(count ~ dist_emotion*age_cat + dist_emotion*sex + race + dist_emotion*income_std + emotion +
+              (1 + dist_emotion| id), data = gss_long_nomiss, family = poisson(), 
+            control = glmerControl(optimizer = "bobyqa"))
 
-model_gam_cont <- gam(count_frac ~ dist_emotion + income_std + sex + race + age_cat + emotion + s(id, bs = 're'),
-                      data = gss_long_nomiss,
-                      family = binomial,
-                      method = 'REML')
+stargazer(m9, type = "html")
 
+age_plot <- plot_model(m9, type = "int")[[1]]
+
+age_plot + theme_minimal() + 
+            labs(subtitle = "by Age",
+                 x = "distance from emotion",
+                 color = "Age Category")
 
 ```
 
 
+## Comment 5  
+In reviewing the analyses, we were curious about the extent to which the patterns (both main and interaction effects) are mostly due to the more positive emotions (e.g., happy, proud) and, in turn, less due to the more negative emotions (e.g., fearful, ashamed, lonely).   You already discuss this some, but we would like to see a more developed summary regarding this issue (although most of the analysis likely could be in an online supplement/appendix).
+
 ```{r}
+highepa_emotions <- c("hapfeel", "proud", "ovrjoyed", "contented")
 
-library(broom)
-library(broom.mixed)
-loadd(cum_logit_models)
-loadd(nb_bin)
-loadd(nb_control)
+lowepa_emotions <- c("lonely", "fearful", "ashamed", "worried", "sad", "madat", "outraged", "angry")
 
-nb_models <- list(nb_bin, nb_control)
+lowe_highp_emotions <- c("madat", "outraged", "angry")
+```
 
-get_estimate <- function(m, m_number, bayesian){
+
+```{r, results = 'asis'}
+run_baseline_models <- function(emotions, t) {
+  gss_emotion_subset <- gss_long_nomiss %>% 
+                        filter(emotion %in% emotions) %>% 
+                        mutate(dist_emotion = scale(distance, center = TRUE, scale = TRUE))
   
-  if(bayesian == TRUE){
-    tidy_res <- broom::tidy(m[[m_number]], conf.int = TRUE)
+  m1 <- glmer(count ~ dist_emotion + emotion + (1 | id), data = gss_emotion_subset, family = poisson())
 
-  }
-  else{
-    tidy_res <- get_model_data(m[[m_number]], type = "est")
-  }
+  m2 <- glmer(count ~ dist_emotion + income_std + degree + prestg_std + emotion + (1 | id), data = gss_emotion_subset, family = poisson(), control = glmerControl(optimizer = "bobyqa"))
   
-  tidy_res <- tidy_res %>% filter(term == "dist_emotion" | term == "b_dist_emotion")
-  return(tidy_res)
+  m3 <- glmer(count ~ dist_emotion + income_std + emotion + (1 | id), 
+              data = gss_emotion_subset, family = poisson(), control = glmerControl(optimizer = "bobyqa"))
   
+  m4 <- glmer(count ~ dist_emotion + income_std + sex + race + age_cat + emotion + (1 | id), data = gss_emotion_subset, family = poisson(), control = glmerControl(optimizer = "bobyqa"))
+  
+  stargazer(m1, m2, m3, m4, title = t, type = "html")
 }
 
-
-results_df <- tibble(model_name = c("cum_logit_models",
-                                    "cum_logit_models",
-                                    "cum_logit_models",
-                                    "cum_logit_models",
-                                    "frac_logit_models",
-                                    "frac_logit_models",
-                                    "nb_models",
-                                    "nb_models"),
-                     mnumber = c(1, 2, 3, 4, 1, 2, 1, 2),
-                     bayesian = c(TRUE, TRUE, TRUE, TRUE,
-                                  FALSE, FALSE, FALSE, FALSE),
-                     family = c("cumulative logit",
-                                "cumulative logit",
-                                "cumulative logit (grouped)",
-                                "cumulative logit (grouped)",
-                                "fractional logit",
-                                "fractional logit",
-                                "negative binomial (zi)",
-                                "negative binomial (zi)"),
-                     control = c(rep(c("bivariate", "controls"), 4)))
-
-
-results_df <- tibble(model_name = c("nb_bin", "nb_control", "c_logit_bin", "c_logit_control", "c_group_bin", "c_group_cont",
-                                        "c_bin_b", "c_bin_control"),
-                         family = c("negative binomial", "negative binomial", "cumulative logit", "cumulative logit",
-                                    "c logit (grouped)", "c logit (grouped)", "logit", "logit"),
-                         control = c(rep(c("bivariate", "control"), 4)))
-
-results_df <- results_df %>% 
-              rowwise() %>% 
-              mutate(results = list(get_estimate(model_name, bayesian = TRUE))) %>% 
-              unnest(results)
-
-
-ggplot(data = results_df, mapping = aes(x = reorder(family, estimate), y = estimate)) + 
-      geom_point() + geom_linerange(aes(x = reorder(family, estimate), ymin = lb, ymax = ub)) + 
-      facet_wrap(~control) + coord_flip() + theme_minimal() + 
-      labs(title = "Main Effect of Distance from Emotion Across Models", 
-           x = "functional form of the model",
-           y = "estimate (95% CI)") + geom_hline(yintercept = 0, color = muted("pink"))
-
-
+run_baseline_models(highepa_emotions, "Happy, Proud, Overjoyed")
+run_baseline_models(lowepa_emotions, "Lonely, Fearful, Ashamed, Worried, Sad")
+run_baseline_models(lowe_highp_emotions, "Mad At, Outraged, Angry")
 ```
 
-```{r}
-mix <- mixture(negbinomial, negbinomial)
-
-fit1 <- brm(bf(count ~ dist_emotion + emotion + (1 | id)), gss_long_nomiss, family = mix,
-            prior = prior, chains = 4) 
-
-fit2 <- brm(bf(count ~ dist_emotion + income_std + degree + prestg_std + emotion + (1 | id)), gss_long_no_miss, family = mix,
-            prior = prior, chains = 2) 
-summary(fit1)
-pp_check(fit1)
-```
-
-```{r}
-nb_control = run_control_models(family = "negbinom",
-                     d = gss_analysis)
-
-  logit_control = run_control_models(family = "logit",
-                     d = gss_analysis)
-```
-
-
-```{r}
-x <- plot_model(frac_logit_models[[1]], transform = NULL)
-
-tidy_res <- x$data
-```
 
