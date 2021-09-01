@@ -66,6 +66,9 @@ recode_data <- function(d, emotion_vars, cont_vars, cat_vars){
                               degree == 2 ~ "Junior College",
                               degree == 3 ~ "Bachelor",
                               degree == 4 ~ "Graduate"),
+           degree = factor(degree, levels = c("Bachelor", "Less than HS",
+                                              "HS", "Junior College",
+                                              "Graduate")),
            race = case_when(race == 1 ~ "White",
                             race == 2 ~ "Black",
                             race == 3 ~ "Other"),
@@ -240,7 +243,9 @@ remove_missing_cases <- function(gss_long_emotions, vars){
                   mutate(emotion = str_replace(emotion, "contentd", "contented"),
                          emotion = str_replace(emotion, "hapfeel", "happy"),
                          emotion = str_replace(emotion, "madat", "mad"),
-                         emotion = str_replace(emotion, "ovrjoyed", "overjoyed"))
+                         emotion = str_replace(emotion, "ovrjoyed", "overjoyed")) %>% 
+                  mutate(degree = as.factor(degree),
+                         age_cat = as.factor(age_cat))
   
   return(gss_analysis)
 }
@@ -300,7 +305,6 @@ run_control_models <- function(family = c("negbinom", "logit"), d){
 }
 
 run_int_models <- function(d){
-  
   inc_int <- glmmTMB(count_bin ~ dist_emotion*income_std + degree + sex + 
                        race + age_cat + prestg_std + emotion + (1 + dist_emotion | id),
                      data = d, family = binomial)
@@ -341,6 +345,11 @@ run_int_models <- function(d){
 run_emotion_specific_int <- function(d, emo_type){
   
   d_subset <- d %>% 
+              mutate(emotion_type = case_when(emotion %in% c("happy", "proud", "overjoyed", "contented", 
+                                                             "excited", "calm") ~ "good_powerful",
+                                              emotion %in% c("lonely", "fearful", "ashamed", "worried", "sad", 
+                                                             "restless", "anxious") ~ "bad_weak",
+                                              emotion %in% c("outraged", "angry",  "mad") ~ "bad_powerful")) %>% 
               filter(emotion_type == emo_type) %>% 
               mutate(dist_emotion = scale(distance, center = TRUE, scale = TRUE),
                      income_std = scale(realinc, center = TRUE, scale = TRUE),
@@ -364,15 +373,11 @@ write_descriptive_table <- function(d, fn){
                   slice(1) %>% 
                   ungroup() %>% 
                   filter(!is.na(occ)) %>% 
-                  select(age, 
-                         age_cat,
-                         realinc,
-                         income_std,
-                         sex,
-                         race,
-                         degree,
-                         children,
-                         prestg80) %>% 
+                  mutate(degree = factor(degree, levels = c("Less than HS", "HS", "Junior College",
+                                                            "Bachelor", "Graduate"))) %>% 
+                  select(realinc,
+                         degree, 
+                         sex, race, age_cat, prestg80) %>% 
                   mutate(realinc = as.integer(realinc)) %>% 
                   as.data.frame()
   
@@ -381,7 +386,7 @@ write_descriptive_table <- function(d, fn){
                                           race ~ "Race",
                                           sex ~ "Sex",
                                           degree ~ "Highest Degree",
-                                          children ~ "Number of Children")) %>% 
+                                          prestg80 ~ "Occupational Prestige")) %>% 
           as_gt()
   
   gt::gtsave(d_table, paste(fn, ".html", sep = ""), path = here("output/"))
@@ -391,7 +396,7 @@ write_model_results <- function(m, fn, type = c("base", "int", "emotion")){
   if(type == "base"){
     htmlreg(l = list(m[[1]], m[[2]][[1]], m[[2]][[2]], m[[2]][[3]]),
             file = paste("output/", fn, ".html", sep = ""),
-            custom.coef.map = list("dist_emotion" = "Distance from Emotion",
+            custom.coef.map = list("dist_emotion" = "occ-char-emo-discrepancy",
                                    "income_std" = "Income (std)",
                                    "degreeLess than HS" = "Less than HS",
                                    "degreeHS" = "High School",
@@ -405,53 +410,60 @@ write_model_results <- function(m, fn, type = c("base", "int", "emotion")){
                                    "prestg_std" = "Occupational Prestige (std)"))
   } else if(type == "int"){
     htmlreg(l = list(m[[1]], m[[2]], 
-                     m[[3]], m[[4]], m[[5]]),
+                     m[[3]], m[[4]], m[[5]], m[[6]]),
             paste("output/", fn, ".html", sep = ""),
-            custom.coef.map = list("dist_emotion" = "Distance from Emotion",
+            custom.coef.map = list("dist_emotion" = "occ-char-emo-discrepancy",
                                    "income_std" = "Income (std)",
                                    "dist_emotion:income_std" = "Dist Emotion*Income",
                                    "degreeLess than HS" = "Less than HS",
                                    "degreeHS" = "High School",
                                    "degreeJunior College" = "Junior College",
                                    "degreeGraduate" = "Graduate Degree",
-                                   "dist_emotion:degreeLess than HS" = "Dist*Less than HS",
-                                   "dist_emotion:degreeHS" = "Dist*HS",
-                                   "dist_emotion:degreeJunior College" = "Dist*Junior College",
-                                   "dist_emotion:degreeGraduate" = "Dist*Graduate Degree",
+                                   "dist_emotion:degreeLess than HS" = "OCED*Less than HS",
+                                   "dist_emotion:degreeHS" = "OCED*HS",
+                                   "dist_emotion:degreeJunior College" = "OCED*Junior College",
+                                   "dist_emotion:degreeGraduate" = "OCED*Graduate Degree",
                                    "sexMale" = "Male",
-                                   "dist_emotion:sexMale" = "Dist*Male",
+                                   "dist_emotion:sexMale" = "OCED*Male",
                                    "children1-2" = "1-2 Children",
                                    "children3+" = "3+ Children",
                                    "raceBlack" = "Black",
                                    "raceOther" = "Other Race", 
                                    "age_cat30-44" = "30-44",
                                    "age_cat45-64" = "45-64",
-                                   "dist_emotion:age_cat30-44"= "Dist*30-44",
-                                   "dist_emotion:age_cat45-64" = "Dist*45-64"))
+                                   "dist_emotion:age_cat30-44"= "OCED*30-44",
+                                   "dist_emotion:age_cat45-64" = "OCED*45-64",
+                                   "prestg_std" = "Occ Prestige",
+                                   "dist_emotion:prestg_std" = "OCED*Prestige"))
   } else if(type == "emotion"){
     htmlreg(l = list(m[[1]], m[[2]][[1]], 
                      m[[2]][[2]], m[[2]][[3]],
-                     m[[2]][[4]], m[[2]][[5]]),
+                     m[[2]][[4]], m[[2]][[5]],
+                     m[[2]][[6]]),
             paste("output/", fn, ".html", sep = ""),
-            custom.coef.map = list("dist_emotion" = "Distance from Emotion",
+            custom.coef.map = list("dist_emotion" = "occ-char-emo-discrepancy",
                                    "income_std" = "Income (std)",
                                    "dist_emotion:income_std" = "Dist Emotion*Income",
                                    "degreeLess than HS" = "Less than HS",
                                    "degreeHS" = "High School",
                                    "degreeJunior College" = "Junior College",
                                    "degreeGraduate" = "Graduate Degree",
-                                   "dist_emotion:degreeLess than HS" = "Dist*Less than HS",
-                                   "dist_emotion:degreeHS" = "Dist*HS",
-                                   "dist_emotion:degreeJunior College" = "Dist*Junior College",
-                                   "dist_emotion:degreeGraduate" = "Dist*Graduate Degree",
+                                   "dist_emotion:degreeLess than HS" = "OCED*Less than HS",
+                                   "dist_emotion:degreeHS" = "OCED*HS",
+                                   "dist_emotion:degreeJunior College" = "OCED*Junior College",
+                                   "dist_emotion:degreeGraduate" = "OCED*Graduate Degree",
                                    "sexMale" = "Male",
-                                   "dist_emotion:sexMale" = "Dist*Male",
+                                   "dist_emotion:sexMale" = "OCED*Male",
                                    "raceBlack" = "Black",
                                    "raceOther" = "Other Race", 
                                    "age_cat30-44" = "30-44",
                                    "age_cat45-64" = "45-64",
                                    "children1-2" = "1-2 Children",
-                                   "children3+" = "3+ Children"))
+                                   "children3+" = "3+ Children",
+                                   "dist_emotion:age_cat30-44"= "OCED*30-44",
+                                   "dist_emotion:age_cat45-64" = "OCED*45-64",
+                                   "prestg_std" = "Occ Prestige",
+                                   "dist_emotion:prestg_std" = "OCED*Prestige"))
   }
 }
 
@@ -479,7 +491,7 @@ make_dist_vis <- function(d, fn){
               plot_annotation(title = "Distribution of Emotion Counts",
                               subtitle = "by emotion, aggregated, and binarized")
   
-  fn <- toString(here(paste("output/", fn, ".png",sep = "")))
+  fn <- toString(here(paste("output/", fn, "ca.png",sep = "")))
   
   ggsave(filename = fn, plot = together, device = "png", 
          width = 5, height = 7)
@@ -496,7 +508,8 @@ make_emotion_plot <- function(m, fn){
                            y = "probability") + coord_flip()
   
   new_plot_data <- emotion_eff[["data"]]
-  new_plot_data <- new_plot_data %>% mutate(emotion_name = emotion_eff[["plot_env"]][["x_lab"]])
+  new_plot_data <- new_plot_data %>% mutate(emotion_name = emotion_eff[["plot_env"]][["x_lab"]],
+                                            emotion_name = str_to_title(emotion_name))
   
   emo_plot <- ggplot(data = new_plot_data, mapping = aes(x = reorder(emotion_name, predicted), y = predicted)) + 
     geom_point() + geom_linerange(aes(x = reorder(emotion_name, predicted), ymin = conf.low,
@@ -506,46 +519,51 @@ make_emotion_plot <- function(m, fn){
          x = "specific emotion",
          y = "probability") + coord_flip()
   
-  fn <- toString(here(paste("output/", fn, ".png",sep = "")))
+  fn <- toString(here(paste("output/", fn, "ca.png",sep = "")))
   
   ggsave(filename = fn, plot = emo_plot, device = "png")
 }
 
 calc_corr_test <- function(d, mod, m_number){
-  emotion_eff <- get_model_data(mod[[m_number]], type = c("pred"), terms = "emotion")
+
+  emotion_eff <- ggpredict(mod[[m_number]], terms = "emotion") %>% 
+                 mutate(term = x)
   
   corr_test <- d %>% 
-    group_by(term) %>% 
-    summarise(a_m_dist = mean(mdist),
-              a_f_dist = mean(fdist)) %>% 
-    filter(term != "interested" & term != "tense") %>% 
-    ungroup() %>% 
-    mutate(eff = emotion_eff$predicted)
+                group_by(term) %>% 
+                summarise(a_m_dist = mean(mdist),
+                          a_f_dist = mean(fdist)) %>% 
+                filter(term != "interested" & term != "tense") %>% 
+                ungroup() %>% 
+                left_join(emotion_eff)
+                
   
-  m_test <- cor.test(corr_test$a_m_dist, corr_test$eff)
-  f_test <- cor.test(corr_test$a_f_dist, corr_test$eff)  
+  m_test <- cor.test(corr_test$a_m_dist, corr_test$predicted)
+  f_test <- cor.test(corr_test$a_f_dist, corr_test$predicted)  
   
   both_test <- list(m_test, f_test)
   return(both_test)
 }
 
+
 make_int_plots <- function(mod, m_number, var, subt, legend_label, fn){
   
-  x <- plot_model(mod[[m_number]], type = "pred", 
-                  terms = c("dist_emotion [all]", var))
   
-  x <- x + labs(title = "Predicted Probabilities",
+  x <- plot_model(mod[[m_number]], type = "pred", 
+                  terms = c("dist_emotion [all]", var),
+                  colors = "bw")
+  
+  x <- x + labs(title = " ",
            subtitle = subt,
-           x = "distance from emotion",
+           x = "occ-char-emo-discrepancy (std)",
            y = "probability",
            color = legend_label) + theme_minimal()
+
   
-  fn <- toString(here(paste("output/", fn, ".png",sep = "")))
-  
-  ggsave(filename = fn, plot = x, device = "png")
+  return(x)
 }
 
-make_emotion_table <- function(d, fn){
+make_emotion_table <- function(d, e, fn){
   emo_desc <- d %>% select(distance, emotion)
   
   emo_desc <- emo_desc %>% 
@@ -553,12 +571,144 @@ make_emotion_table <- function(d, fn){
     summarise(mean_dist = mean(distance, na.rm = TRUE),
               sd_dist = sd(distance, na.rm = TRUE))
   
+  epa <- e %>% 
+        mutate(emotion = term) %>% 
+        group_by(emotion) %>% 
+        slice(1) %>% 
+        select(emotion, E, P, A)
+  
+  emo_desc <- left_join(emo_desc, epa)
+  
   emo_table <- kable(emo_desc, 
               format = "html", 
               digits = 3, 
               caption = "Table 1: Distances from Characteristic Emotion by Emotion DV", 
-              col.names = c("Emotion", "Mean", "Standard Deviation"))
+              col.names = c("Emotion", "Mean", "Standard Deviation", "E", "P", "A"))
   
-  save_kable(emo_table, here(paste("output/", fn)))
+  save_kable(emo_table, here(paste("output/ca", fn)))
 }
 
+run_cumulative_logit_models <- function(d){
+  c_logit_bin <- brms::brm(count_fact ~ dist_emotion + emotion + (1 | id),
+                           data = d, family = cumulative("logit"))
+  
+  c_logit_control <- brms::brm(count_fact ~ dist_emotion + income_std + sex + 
+                                 race + prestg_std + age_cat + emotion + (1 | id),
+                               data = d, family = cumulative("logit"))
+  
+  c_group_bin <- brms::brm(count_group ~ dist_emotion + emotion + (1 | id),
+                           data = d, family = cumulative("logit"))
+  
+  c_group_cont <- brms::brm(count_group ~ dist_emotion + income_std + sex + 
+                              race + prestg_std + age_cat + emotion + (1 | id),
+                            data = d, family = cumulative("logit"))
+  
+  c_logit_models <- list(c_logit_bin, c_logit_control, c_group_bin, c_group_cont)
+  
+  return(c_logit_models)
+  
+}
+
+run_fractional_logit_models <- function(d){
+  model_gam_bin <- mgcv::gam(count_frac ~ dist_emotion + emotion + s(id, bs = 're'),
+                       data = d,
+                       family = binomial,
+                       method = 'REML')
+  
+  
+  model_gam_cont <- mgcv::gam(count_frac ~ dist_emotion + income_std + sex + race + age_cat + emotion + s(id, bs = 're'),
+                        data = d,
+                        family = binomial,
+                        method = 'REML')
+  
+  frac_logit_models <- list(model_gam_bin, model_gam_cont)
+  
+  return(frac_logit_models)
+}
+
+get_estimates <- function(m, m_number, mtype = c("bayesian", "frac", "nb")){
+  
+  if(mtype == "bayesian"){
+    tidy_res <- broom::tidy(m[[m_number]], conf.int = TRUE)
+    
+  }
+  else {
+    x <- plot_model(m[[m_number]], transform = NULL)
+    tidy_res <- x$data
+    
+  }
+  
+  tidy_res <- tidy_res %>% 
+              filter(term == "dist_emotion" | term == "b_dist_emotion") %>% 
+              select(term, estimate, conf.low, conf.high)
+  return(tidy_res)
+  
+}
+
+make_model_comparison_plot <- function(cum_logit_models, frac_logit_models, nb1, nb2){
+  nb_models <- list(nb1, nb2[[3]])
+  
+  results_df <-  tibble(model_name = c("cum_logit_models",
+                                       "cum_logit_models",
+                                       "cum_logit_models",
+                                       "cum_logit_models",
+                                       "frac_logit_models",
+                                       "frac_logit_models",
+                                       "nb_models",
+                                       "nb_models"),
+                                     model_number = c(1, 2, 3, 4, 1, 2, 1, 2),
+                                     bayesian = c(TRUE, TRUE, TRUE, TRUE,
+                                                  FALSE, FALSE, FALSE, FALSE),
+                                     family = c("cumulative logit",
+                                                "cumulative logit",
+                                                "cumulative logit (grouped)",
+                                                "cumulative logit (grouped)",
+                                                "fractional logit",
+                                                "fractional logit",
+                                                "negative binomial (zi)",
+                                                "negative binomial (zi)"),
+                                     control = c(rep(c("bivariate", "controls"), 4)))
+  
+  
+          b1 <- get_estimates(cum_logit_models, 1, mtype = "bayesian")
+          b2 <- get_estimates(cum_logit_models, 2, mtype = "bayesian")
+          b3 <- get_estimates(cum_logit_models, 3, mtype = "bayesian")
+          b4 <- get_estimates(cum_logit_models, 4, mtype = "bayesian")
+          f1 <- get_estimates(frac_logit_models, 1, mtype = "frac")
+          f2 <- get_estimates(frac_logit_models, 2, mtype = "frac")
+          n1 <- get_estimates(nb_models, 1, mtype = "nb")
+          n2 <- get_estimates(nb_models, 2, mtype = "nb")
+          
+          estimates <- rbind(b1, b2, b3, b4, f1, f2, n1, n2)
+          
+          results_df <- cbind(results_df, estimates)
+          
+  model_comp_plot <- ggplot(data = results_df, mapping = aes(x = reorder(family, estimate), y = estimate)) + 
+            geom_point() + geom_linerange(aes(x = reorder(family, estimate), ymin = conf.low, ymax = conf.high)) + 
+            facet_wrap(~control) + coord_flip() + theme_minimal() + 
+            labs(title = "Main Effect of Occ-Char-Emo-Discrepancy",
+                 subtitle = "across model types",
+                 x = "functional form of the model",
+                 y = "estimate (95% CI)") + 
+            geom_hline(yintercept = 0, color = muted("pink"))
+  
+  ggsave(here("output/model_comp_plot.png"), model_comp_plot)
+          
+  
+  
+}
+
+make_main_oced_plot <- function(m, fn){
+  
+  p <- plot_model(m[[3]], type = "pred", terms = "dist_emotion [all]")
+  
+  p <- p + labs(title = "Predicted Probabilities",
+                subtitle = "of reporting experiencing emotion >3 days prior week",
+                x = "occ-char-emo-discrepancy (std)",
+                y = "probability") + theme_minimal()
+  
+  fn <- toString(here(paste("output/", fn, ".png",sep = "")))
+  
+  ggsave(filename = fn, plot = p, device = "png")
+  
+}
